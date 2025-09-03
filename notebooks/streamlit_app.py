@@ -9,7 +9,16 @@ from sklearn.preprocessing import MinMaxScaler
 # ---------------------------
 # ADIM 0: SABİT VERİ DOSYASI
 # ---------------------------
-df = pd.read_csv('../data/eredivisie_midfielders_clustered.csv')
+import os
+
+# Dosya yolu düzeltmesi - hem local hem de cloud için çalışır
+if os.path.exists('../data/eredivisie_midfielders_clustered.csv'):
+    df = pd.read_csv('../data/eredivisie_midfielders_clustered.csv')
+elif os.path.exists('data/eredivisie_midfielders_clustered.csv'):
+    df = pd.read_csv('data/eredivisie_midfielders_clustered.csv')
+else:
+    st.error("CSV dosyası bulunamadı!")
+    st.stop()
 df = df.dropna(how='all')  # Boş satırları temizle
 
 # ---------------------------
