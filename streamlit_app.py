@@ -712,6 +712,658 @@ def update_player_view(selected_players):
 
 update_player_view(player_select)
 
+# ---------------------------
+# STEP 6: SCATTER PLOT ANALYSES
+# ---------------------------
+st.markdown(f"# {remix_icon('scatter-chart-line')}Advanced Scatter Plot Analyses", unsafe_allow_html=True)
+st.markdown("Explore relationships between different player metrics through interactive scatter plots.")
+
+# Create tabs for different scatter plot analyses
+tab1, tab2, tab3, tab4 = st.tabs([
+    f"Age vs Performance", 
+    f"Minutes vs Effectiveness",
+    f"Passing vs Creativity", 
+    f"Defense vs Attack"
+])
+
+with tab1:
+    st.markdown(f"### {remix_icon('user-line')}Age vs Performance Analysis", unsafe_allow_html=True)
+    st.markdown("Analyze how player age correlates with goal and assist performance.")
+    
+    # Age vs Performance Scatter Plot
+    fig_age = go.Figure()
+    
+    # Color by cluster
+    cluster_colors_scatter = {0: '#F97316', 1: '#EC4899', 2: '#06B6D4'}
+    cluster_names = {0: 'Elite Creative', 1: 'Developing', 2: 'Defensive Engines'}
+    
+    for cluster_id in df_filtered['Cluster'].unique():
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        
+        fig_age.add_trace(go.Scatter(
+            x=cluster_data['Age'],
+            y=cluster_data['std_Gls'] + cluster_data['std_Ast'],
+            mode='markers',
+            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
+            hovertemplate='<b>%{text}</b><br>' +
+                         'Age: %{x}<br>' +
+                         'Goals + Assists: %{y:.2f}<br>' +
+                         '<extra></extra>',
+            marker=dict(
+                size=10,
+                color=cluster_colors_scatter[cluster_id],
+                opacity=0.7,
+                line=dict(width=1, color='white')
+            )
+        ))
+    
+    fig_age.update_layout(
+        title="Age vs Total Goal Contributions (Goals + Assists)",
+        xaxis_title="Age",
+        yaxis_title="Goals + Assists",
+        template='plotly_dark',
+        height=500,
+        hovermode='closest'
+    )
+    
+    st.plotly_chart(fig_age, use_container_width=True)
+    
+    # Age insights
+    col1, col2 = st.columns(2)
+    with col1:
+        youngest_top_performer = df_filtered.loc[df_filtered['std_Gls'] + df_filtered['std_Ast'] > 1.5, 'Age'].min()
+        st.metric("Youngest High Performer Age", f"{youngest_top_performer:.0f}" if not pd.isna(youngest_top_performer) else "N/A")
+    with col2:
+        avg_age_top_performers = df_filtered[df_filtered['std_Gls'] + df_filtered['std_Ast'] > 1.0]['Age'].mean()
+        st.metric("Avg Age of Top Contributors", f"{avg_age_top_performers:.1f}" if not pd.isna(avg_age_top_performers) else "N/A")
+
+with tab2:
+    st.markdown(f"### {remix_icon('dashboard-line')}Playing Time vs Effectiveness", unsafe_allow_html=True)
+    st.markdown("Examine the relationship between minutes played and expected goal contributions.")
+    
+    # Minutes vs Effectiveness Scatter Plot
+    fig_minutes = go.Figure()
+    
+    for cluster_id in df_filtered['Cluster'].unique():
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        
+        fig_minutes.add_trace(go.Scatter(
+            x=cluster_data['std_Min'],
+            y=cluster_data['std_xG'] + cluster_data['std_xAG'],
+            mode='markers',
+            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
+            hovertemplate='<b>%{text}</b><br>' +
+                         'Minutes: %{x}<br>' +
+                         'xG + xAG: %{y:.2f}<br>' +
+                         '<extra></extra>',
+            marker=dict(
+                size=10,
+                color=cluster_colors_scatter[cluster_id],
+                opacity=0.7,
+                line=dict(width=1, color='white')
+            )
+        ))
+    
+    fig_minutes.update_layout(
+        title="Playing Time vs Expected Goal Contributions (xG + xAG)",
+        xaxis_title="Minutes Played",
+        yaxis_title="Expected Goals + Expected Assists",
+        template='plotly_dark',
+        height=500,
+        hovermode='closest'
+    )
+    
+    st.plotly_chart(fig_minutes, use_container_width=True)
+    
+    # Minutes insights
+    col1, col2 = st.columns(2)
+    with col1:
+        # Calculate efficiency and find the most efficient player
+        eligible_players = df_filtered[df_filtered['std_Min'] > 1000].copy()
+        if not eligible_players.empty:
+            eligible_players['efficiency'] = (eligible_players['std_xG'] + eligible_players['std_xAG']) / eligible_players['std_Min'] * 1000
+            efficiency_leader_idx = eligible_players['efficiency'].idxmax()
+            efficiency_leader = df_filtered.loc[efficiency_leader_idx]
+            st.metric("Most Efficient Player", efficiency_leader['Player'])
+        else:
+            st.metric("Most Efficient Player", "N/A")
+    with col2:
+        avg_minutes = df_filtered['std_Min'].mean()
+        st.metric("Average Minutes Played", f"{avg_minutes:.0f}")
+
+with tab3:
+    st.markdown(f"### {remix_icon('route-line')}Passing Accuracy vs Creativity", unsafe_allow_html=True)
+    st.markdown("Discover the balance between safe passing and creative playmaking.")
+    
+    # Passing vs Creativity Scatter Plot
+    fig_passing = go.Figure()
+    
+    for cluster_id in df_filtered['Cluster'].unique():
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        
+        fig_passing.add_trace(go.Scatter(
+            x=cluster_data['pass_Cmp%'],
+            y=cluster_data['pass_KP'],
+            mode='markers',
+            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
+            hovertemplate='<b>%{text}</b><br>' +
+                         'Pass Success: %{x:.1%}<br>' +
+                         'Key Passes: %{y:.2f}<br>' +
+                         '<extra></extra>',
+            marker=dict(
+                size=10,
+                color=cluster_colors_scatter[cluster_id],
+                opacity=0.7,
+                line=dict(width=1, color='white')
+            )
+        ))
+    
+    fig_passing.update_layout(
+        title="Passing Accuracy vs Key Passes",
+        xaxis_title="Pass Completion Rate",
+        yaxis_title="Key Passes per Game",
+        template='plotly_dark',
+        height=500,
+        hovermode='closest'
+    )
+    
+    st.plotly_chart(fig_passing, use_container_width=True)
+    
+    # Passing insights
+    col1, col2 = st.columns(2)
+    with col1:
+        if not df_filtered.empty and 'pass_Cmp%' in df_filtered.columns:
+            best_passer_idx = df_filtered['pass_Cmp%'].idxmax()
+            best_passer = df_filtered.loc[best_passer_idx]
+            st.metric("Most Accurate Passer", f"{best_passer['Player']} ({best_passer['pass_Cmp%']:.1%})")
+        else:
+            st.metric("Most Accurate Passer", "N/A")
+    with col2:
+        if not df_filtered.empty and 'pass_KP' in df_filtered.columns:
+            most_creative_idx = df_filtered['pass_KP'].idxmax()
+            most_creative = df_filtered.loc[most_creative_idx]
+            st.metric("Most Creative Player", f"{most_creative['Player']} ({most_creative['pass_KP']:.1f} KP)")
+        else:
+            st.metric("Most Creative Player", "N/A")
+
+with tab4:
+    st.markdown(f"### {remix_icon('sword-line')}Defensive vs Offensive Contributions", unsafe_allow_html=True)
+    st.markdown("Compare players' defensive work rate with their attacking output.")
+    
+    # Defense vs Attack Scatter Plot
+    fig_def_att = go.Figure()
+    
+    for cluster_id in df_filtered['Cluster'].unique():
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        
+        fig_def_att.add_trace(go.Scatter(
+            x=cluster_data['def_Tkl'] + cluster_data['def_Int'],
+            y=cluster_data['std_Gls'] + cluster_data['std_Ast'],
+            mode='markers',
+            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
+            hovertemplate='<b>%{text}</b><br>' +
+                         'Tackles + Interceptions: %{x:.2f}<br>' +
+                         'Goals + Assists: %{y:.2f}<br>' +
+                         '<extra></extra>',
+            marker=dict(
+                size=10,
+                color=cluster_colors_scatter[cluster_id],
+                opacity=0.7,
+                line=dict(width=1, color='white')
+            )
+        ))
+    
+    fig_def_att.update_layout(
+        title="Defensive Actions vs Offensive Contributions",
+        xaxis_title="Tackles + Interceptions per Game",
+        yaxis_title="Goals + Assists per Game",
+        template='plotly_dark',
+        height=500,
+        hovermode='closest'
+    )
+    
+    st.plotly_chart(fig_def_att, use_container_width=True)
+    
+    # Defense vs Attack insights
+    col1, col2 = st.columns(2)
+    with col1:
+        if not df_filtered.empty:
+            defensive_actions = df_filtered['def_Tkl'] + df_filtered['def_Int']
+            best_defender_idx = defensive_actions.idxmax()
+            best_defender = df_filtered.loc[best_defender_idx]
+            st.metric("Best Defender", f"{best_defender['Player']} ({defensive_actions.loc[best_defender_idx]:.1f})")
+        else:
+            st.metric("Best Defender", "N/A")
+    with col2:
+        if not df_filtered.empty:
+            balance_score = ((df_filtered['def_Tkl'] + df_filtered['def_Int']) * 
+                           (df_filtered['std_Gls'] + df_filtered['std_Ast']))
+            most_balanced_idx = balance_score.idxmax()
+            most_balanced = df_filtered.loc[most_balanced_idx]
+            st.metric("Most Balanced Player", most_balanced['Player'])
+        else:
+            st.metric("Most Balanced Player", "N/A")
+
+# Summary insights section
+st.markdown(f"## {remix_icon('lightbulb-line')}Key Insights from Scatter Analysis", unsafe_allow_html=True)
+
+insights_col1, insights_col2 = st.columns(2)
+
+with insights_col1:
+    st.markdown(f"### {remix_icon('trending-up-line')}Performance Trends", unsafe_allow_html=True)
+    
+    # Calculate correlations
+    age_performance_corr = df_filtered['Age'].corr(df_filtered['std_Gls'] + df_filtered['std_Ast'])
+    minutes_effectiveness_corr = df_filtered['std_Min'].corr(df_filtered['std_xG'] + df_filtered['std_xAG'])
+    
+    st.write(f"• **Age-Performance Correlation**: {age_performance_corr:.3f}")
+    st.write(f"• **Minutes-Effectiveness Correlation**: {minutes_effectiveness_corr:.3f}")
+    
+    if age_performance_corr > 0.1:
+        st.success("Older players tend to be more productive")
+    elif age_performance_corr < -0.1:
+        st.info("Younger players show higher goal contributions")
+    else:
+        st.info("Age has minimal impact on performance")
+
+with insights_col2:
+    st.markdown(f"### {remix_icon('award-line')}Standout Players", unsafe_allow_html=True)
+    
+    # Find standout players in different categories
+    young_players = df_filtered[df_filtered['Age'] <= 20]
+    if not young_players.empty:
+        top_young_talent = young_players.nlargest(1, 'std_Gls')
+        if not top_young_talent.empty:
+            st.write(f"• **Top Young Talent**: {top_young_talent.iloc[0]['Player']} (Age {top_young_talent.iloc[0]['Age']:.0f})")
+    else:
+        st.write("• **Top Young Talent**: No players ≤20 years old")
+    
+    experienced_players = df_filtered[df_filtered['std_Min'] > 1000]
+    if not experienced_players.empty:
+        most_efficient = experienced_players.nlargest(1, 'std_xG')
+        if not most_efficient.empty:
+            st.write(f"• **Most Clinical Finisher**: {most_efficient.iloc[0]['Player']} ({most_efficient.iloc[0]['std_xG']:.2f} xG)")
+    else:
+        st.write("• **Most Clinical Finisher**: No players with >1000 minutes")
+    
+    # Best two-way player
+    if not df_filtered.empty:
+        df_filtered_copy = df_filtered.copy()
+        df_filtered_copy['two_way_score'] = (df_filtered_copy['std_Gls'] + df_filtered_copy['std_Ast']) * (df_filtered_copy['def_Tkl'] + df_filtered_copy['def_Int'])
+        best_two_way = df_filtered_copy.nlargest(1, 'two_way_score')
+        
+        if not best_two_way.empty:
+            st.write(f"• **Best Two-Way Player**: {best_two_way.iloc[0]['Player']}")
+    else:
+        st.write("• **Best Two-Way Player**: No data available")
+
+# ---------------------------
+# STEP 7: LINE CHART/TREND ANALYSES
+# ---------------------------
+st.markdown(f"# {remix_icon('line-chart-line')}Trend & Line Chart Analyses", unsafe_allow_html=True)
+st.markdown("Discover performance trends across different dimensions with interactive line charts.")
+
+# Create tabs for different trend analyses
+trend_tab1, trend_tab2, trend_tab3= st.tabs([
+    "Age Trends", 
+    "Playing Time Trends",
+    "Team Performance Trends", 
+])
+
+with trend_tab1:
+    st.markdown(f"### {remix_icon('user-line')}Performance Trends by Age", unsafe_allow_html=True)
+    st.markdown("Analyze how different performance metrics change with player age.")
+    
+    # Age trend analysis
+    age_groups = df_filtered.groupby('Age').agg({
+        'std_Gls': 'mean',
+        'std_Ast': 'mean', 
+        'std_xG': 'mean',
+        'std_xAG': 'mean',
+        'pass_KP': 'mean',
+        'def_Tkl': 'mean',
+        'def_Int': 'mean',
+        'Player': 'count'
+    }).reset_index()
+    age_groups.rename(columns={'Player': 'Player_Count'}, inplace=True)
+    
+    # Filter out ages with very few players (less than 2)
+    age_groups = age_groups[age_groups['Player_Count'] >= 2]
+    
+    if not age_groups.empty:
+        # Create line chart for offensive metrics
+        fig_age_trend = go.Figure()
+        
+        fig_age_trend.add_trace(go.Scatter(
+            x=age_groups['Age'],
+            y=age_groups['std_Gls'],
+            mode='lines+markers',
+            name='Goals per Game',
+            line=dict(color='#FF6B6B', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_age_trend.add_trace(go.Scatter(
+            x=age_groups['Age'],
+            y=age_groups['std_Ast'],
+            mode='lines+markers',
+            name='Assists per Game',
+            line=dict(color='#4ECDC4', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_age_trend.add_trace(go.Scatter(
+            x=age_groups['Age'],
+            y=age_groups['pass_KP'],
+            mode='lines+markers',
+            name='Key Passes per Game',
+            line=dict(color='#45B7D1', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_age_trend.update_layout(
+            title="Offensive Performance Trends by Age",
+            xaxis_title="Age",
+            yaxis_title="Average per Game",
+            template='plotly_dark',
+            height=500,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig_age_trend, use_container_width=True)
+        
+        # Defensive trends by age
+        fig_age_def = go.Figure()
+        
+        fig_age_def.add_trace(go.Scatter(
+            x=age_groups['Age'],
+            y=age_groups['def_Tkl'],
+            mode='lines+markers',
+            name='Tackles per Game',
+            line=dict(color='#96CEB4', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_age_def.add_trace(go.Scatter(
+            x=age_groups['Age'],
+            y=age_groups['def_Int'],
+            mode='lines+markers',
+            name='Interceptions per Game',
+            line=dict(color='#FFEAA7', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_age_def.update_layout(
+            title="Defensive Performance Trends by Age",
+            xaxis_title="Age",
+            yaxis_title="Average per Game",
+            template='plotly_dark',
+            height=500,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig_age_def, use_container_width=True)
+        
+        # Age insights
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            peak_goal_age = age_groups.loc[age_groups['std_Gls'].idxmax(), 'Age']
+            st.metric("Peak Goal Scoring Age", f"{peak_goal_age:.0f}")
+        with col2:
+            peak_assist_age = age_groups.loc[age_groups['std_Ast'].idxmax(), 'Age']
+            st.metric("Peak Assist Age", f"{peak_assist_age:.0f}")
+        with col3:
+            peak_defense_age = age_groups.loc[(age_groups['def_Tkl'] + age_groups['def_Int']).idxmax(), 'Age']
+            st.metric("Peak Defensive Age", f"{peak_defense_age:.0f}")
+    else:
+        st.info("Not enough data for age trend analysis")
+
+with trend_tab2:
+    st.markdown(f"### {remix_icon('timer-line')}Performance vs Playing Time", unsafe_allow_html=True)
+    st.markdown("Examine how performance metrics correlate with minutes played.")
+    
+    # Create minutes bins for trend analysis
+    df_minutes = df_filtered.copy()
+    df_minutes['Minutes_Bin'] = pd.cut(df_minutes['std_Min'], 
+                                      bins=5, 
+                                      labels=['0-500', '500-1000', '1000-1500', '1500-2000', '2000+'])
+    
+    minutes_trends = df_minutes.groupby('Minutes_Bin').agg({
+        'std_Gls': 'mean',
+        'std_Ast': 'mean',
+        'std_xG': 'mean',
+        'std_xAG': 'mean',
+        'pass_Cmp%': 'mean',
+        'def_Tkl': 'mean',
+        'Player': 'count'
+    }).reset_index()
+    minutes_trends.rename(columns={'Player': 'Player_Count'}, inplace=True)
+    
+    if not minutes_trends.empty:
+        # Performance vs Minutes line chart
+        fig_minutes_trend = go.Figure()
+        
+        fig_minutes_trend.add_trace(go.Scatter(
+            x=minutes_trends['Minutes_Bin'],
+            y=minutes_trends['std_Gls'],
+            mode='lines+markers',
+            name='Goals per Game',
+            line=dict(color='#FF6B6B', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_minutes_trend.add_trace(go.Scatter(
+            x=minutes_trends['Minutes_Bin'],
+            y=minutes_trends['std_Ast'],
+            mode='lines+markers',
+            name='Assists per Game',
+            line=dict(color='#4ECDC4', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_minutes_trend.add_trace(go.Scatter(
+            x=minutes_trends['Minutes_Bin'],
+            y=minutes_trends['pass_Cmp%'],
+            mode='lines+markers',
+            name='Pass Success Rate',
+            line=dict(color='#45B7D1', width=3),
+            marker=dict(size=10),
+            yaxis='y2'
+        ))
+        
+        fig_minutes_trend.update_layout(
+            title="Performance Trends by Playing Time",
+            xaxis_title="Minutes Played (Bins)",
+            yaxis_title="Goals/Assists per Game",
+            yaxis2=dict(
+                title="Pass Success Rate",
+                overlaying='y',
+                side='right'
+            ),
+            template='plotly_dark',
+            height=500,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig_minutes_trend, use_container_width=True)
+        
+        # Minutes insights
+        col1, col2 = st.columns(2)
+        with col1:
+            highest_minutes_group = minutes_trends.loc[minutes_trends['std_Gls'].idxmax(), 'Minutes_Bin']
+            st.metric("Most Productive Minutes Range", highest_minutes_group)
+        with col2:
+            most_accurate_group = minutes_trends.loc[minutes_trends['pass_Cmp%'].idxmax(), 'Minutes_Bin']
+            st.metric("Most Accurate Passing Range", most_accurate_group)
+    else:
+        st.info("Not enough data for minutes trend analysis")
+
+with trend_tab3:
+    st.markdown(f"### {remix_icon('team-line')}Team Performance Comparison", unsafe_allow_html=True)
+    st.markdown("Compare average performance metrics across different teams.")
+    
+    # Team performance analysis
+    team_performance = df_filtered.groupby('Squad').agg({
+        'std_Gls': 'mean',
+        'std_Ast': 'mean',
+        'std_xG': 'mean',
+        'std_xAG': 'mean',
+        'pass_Cmp%': 'mean',
+        'def_Tkl': 'mean',
+        'def_Int': 'mean',
+        'Age': 'mean',
+        'Player': 'count'
+    }).reset_index()
+    team_performance.rename(columns={'Player': 'Player_Count'}, inplace=True)
+    
+    # Filter teams with at least 2 players
+    team_performance = team_performance[team_performance['Player_Count'] >= 2]
+    team_performance = team_performance.sort_values('std_Gls', ascending=False)
+    
+    if not team_performance.empty:
+        # Team offensive performance
+        fig_team_off = go.Figure()
+        
+        fig_team_off.add_trace(go.Scatter(
+            x=team_performance['Squad'],
+            y=team_performance['std_Gls'],
+            mode='lines+markers',
+            name='Average Goals',
+            line=dict(color='#FF6B6B', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_team_off.add_trace(go.Scatter(
+            x=team_performance['Squad'],
+            y=team_performance['std_Ast'],
+            mode='lines+markers',
+            name='Average Assists',
+            line=dict(color='#4ECDC4', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_team_off.update_layout(
+            title="Team Offensive Performance Comparison",
+            xaxis_title="Team",
+            yaxis_title="Average per Game",
+            template='plotly_dark',
+            height=500,
+            xaxis_tickangle=-45,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig_team_off, use_container_width=True)
+        
+        # Team defensive performance
+        fig_team_def = go.Figure()
+        
+        fig_team_def.add_trace(go.Scatter(
+            x=team_performance['Squad'],
+            y=team_performance['def_Tkl'],
+            mode='lines+markers',
+            name='Average Tackles',
+            line=dict(color='#96CEB4', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_team_def.add_trace(go.Scatter(
+            x=team_performance['Squad'],
+            y=team_performance['def_Int'],
+            mode='lines+markers',
+            name='Average Interceptions',
+            line=dict(color='#FFEAA7', width=3),
+            marker=dict(size=10)
+        ))
+        
+        fig_team_def.update_layout(
+            title="Team Defensive Performance Comparison",
+            xaxis_title="Team",
+            yaxis_title="Average per Game",
+            template='plotly_dark',
+            height=500,
+            xaxis_tickangle=-45,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig_team_def, use_container_width=True)
+        
+        # Team insights
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            best_attacking_team = team_performance.loc[team_performance['std_Gls'].idxmax(), 'Squad']
+            st.metric("Best Attacking Team", best_attacking_team)
+        with col2:
+            best_creative_team = team_performance.loc[team_performance['std_Ast'].idxmax(), 'Squad']
+            st.metric("Most Creative Team", best_creative_team)
+        with col3:
+            best_defensive_team = team_performance.loc[(team_performance['def_Tkl'] + team_performance['def_Int']).idxmax(), 'Squad']
+            st.metric("Best Defensive Team", best_defensive_team)
+    else:
+        st.info("Not enough data for team comparison")
+
+
+
+# Trend Summary Section
+st.markdown(f"## {remix_icon('trending-up-line')}Key Trend Insights", unsafe_allow_html=True)
+
+trend_insights_col1, trend_insights_col2 = st.columns(2)
+
+with trend_insights_col1:
+    st.markdown(f"### {remix_icon('chart-line')}Performance Patterns", unsafe_allow_html=True)
+    
+    if not df_filtered.empty:
+        # Age-performance correlation
+        age_goal_corr = df_filtered['Age'].corr(df_filtered['std_Gls'])
+        age_def_corr = df_filtered['Age'].corr(df_filtered['def_Tkl'] + df_filtered['def_Int'])
+        
+        st.write(f"• **Age-Goal Correlation**: {age_goal_corr:.3f}")
+        st.write(f"• **Age-Defense Correlation**: {age_def_corr:.3f}")
+        
+        if age_goal_corr > 0.1:
+            st.success("📈 Older players tend to score more")
+        elif age_goal_corr < -0.1:
+            st.info("📉 Younger players are more prolific")
+        else:
+            st.info("➡️ Age has minimal impact on scoring")
+            
+        if age_def_corr > 0.1:
+            st.success("🛡️ Older players are more defensive")
+        elif age_def_corr < -0.1:
+            st.info("⚡ Younger players defend more actively")
+        else:
+            st.info("🔄 Age doesn't affect defensive work")
+
+with trend_insights_col2:
+    st.markdown(f"### {remix_icon('trophy-line')}Peak Performance Insights", unsafe_allow_html=True)
+    
+    if not df_filtered.empty:
+        # Find peak performers in different age ranges
+        young_stars = df_filtered[df_filtered['Age'] <= 20]
+        prime_players = df_filtered[(df_filtered['Age'] > 20) & (df_filtered['Age'] <= 22)]
+        experienced = df_filtered[df_filtered['Age'] > 22]
+        
+        if not young_stars.empty:
+            best_young = young_stars.nlargest(1, 'std_Gls')['Player'].iloc[0]
+            st.write(f"• **Best Young Star (≤20)**: {best_young}")
+        
+        if not prime_players.empty:
+            best_prime = prime_players.nlargest(1, 'std_Gls')['Player'].iloc[0]
+            st.write(f"• **Best Prime Player (21-22)**: {best_prime}")
+            
+        if not experienced.empty:
+            best_experienced = experienced.nlargest(1, 'std_Gls')['Player'].iloc[0]
+            st.write(f"• **Best Experienced (>22)**: {best_experienced}")
+        
+        # Overall trend summary
+        avg_goals_by_age = df_filtered.groupby('Age')['std_Gls'].mean()
+        if len(avg_goals_by_age) > 1:
+            trend_direction = "increasing" if avg_goals_by_age.iloc[-1] > avg_goals_by_age.iloc[0] else "decreasing"
+            st.write(f"• **Overall Goal Trend**: {trend_direction} with age")
+
 
 
 #streamlit run streamlit_app.py
