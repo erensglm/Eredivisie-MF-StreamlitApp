@@ -7,33 +7,20 @@ from fpdf import FPDF
 from sklearn.preprocessing import MinMaxScaler
 import os
 
-# Remixicon CSS import - ensure it loads properly
+# Professional styling
 st.markdown("""
-<link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
 <style>
-    .remix-icon {
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 0.3em;
-        line-height: 1;
-    }
-    /* Ensure icons load properly */
-    [class^="ri-"], [class*=" ri-"] {
-        font-family: 'remixicon' !important;
-        font-style: normal;
-        font-weight: normal;
-        font-variant: normal;
-        text-transform: none;
-        line-height: 1;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+    /* Professional color scheme */
+    :root {
+        --primary-color: #2C3E50;
+        --secondary-color: #34495E;
+        --accent-color: #3498DB;
+        --success-color: #27AE60;
+        --warning-color: #F39C12;
+        --danger-color: #E74C3C;
     }
 </style>
 """, unsafe_allow_html=True)
-
-# Helper function for Remixicon with better styling
-def remix_icon(icon_name, size="1.2em", color="currentColor"):
-    return f'<i class="ri-{icon_name} remix-icon" style="font-size: {size}; color: {color};"></i> '
 
 # ---------------------------
 # STEP 0: FIXED DATA FILE
@@ -194,24 +181,59 @@ Backbone players of the team. Leader-type, reliable names giving 100% performanc
 # ---------------------------
 # STEP 1: PAGE HEADER INFO
 # ---------------------------
-st.set_page_config(page_title="Player Analysis", layout="wide")
-st.markdown(f"# {remix_icon('football-line', '1.5em')} Eredivisie Under-24 Midfielders Scouting Dashboard", unsafe_allow_html=True)
+st.set_page_config(page_title="Player Analysis", layout="wide", initial_sidebar_state="expanded")
 
+# Hero Section
+st.markdown("""
+    <div style='text-align: center; padding: 2.5rem 0; background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+        <h1 style='color: white; font-size: 2.8rem; margin: 0; font-weight: 600; letter-spacing: -0.5px;'>Eredivisie U24 Midfielders</h1>
+        <p style='color: #ECF0F1; font-size: 1.1rem; margin: 0.8rem 0 0 0; font-weight: 300;'>Professional Scouting Dashboard</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# General statistics
+# Quick Stats Cards
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.markdown(f"{remix_icon('group-line')}**Total Players: 48**", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='background: #3498DB; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>48</h2>
+            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Total Players</p>
+        </div>
+    """, unsafe_allow_html=True)
 with col2:
-    st.markdown(f"{remix_icon('pie-chart-line')}**Number of Clusters: 3**", unsafe_allow_html=True)
-st.markdown(f"### {remix_icon('target-line')}Detailed Cluster Profiles", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='background: #9B59B6; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>3</h2>
+            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Player Profiles</p>
+        </div>
+    """, unsafe_allow_html=True)
+with col3:
+    st.markdown("""
+        <div style='background: #27AE60; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>18-24</h2>
+            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Age Range</p>
+        </div>
+    """, unsafe_allow_html=True)
+with col4:
+    st.markdown("""
+        <div style='background: #E67E22; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>18</h2>
+            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Teams</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+st.divider()
+
+# Player Profiles Section with better styling
+st.markdown("### Player Profile Types")
+st.caption("Understand the three distinct player profiles in our analysis")
 
 for cid, prof in cluster_profiles.items():
     # Calculate real cluster data
     cluster_data = df[df['Cluster'] == cid]
     real_player_count = len(cluster_data)
     
-    with st.expander(f"**CLUSTER {cid}: {prof['name']}**"):
+    with st.expander(f"**PLAYER PROFILE {cid}: {prof['name']}**"):
         st.markdown(prof['description'], unsafe_allow_html=True)
         
         # Dynamic statistics from real data
@@ -239,44 +261,93 @@ for cid, prof in cluster_profiles.items():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.markdown(f"**{remix_icon('bar-chart-line')}Basic Statistics**", unsafe_allow_html=True)
+                st.markdown("**Basic Statistics**")
                 st.metric("Average Age", f"{real_avg_age:.1f}")
                 st.metric("Average Minutes", f"{real_avg_minutes:.0f}")
                     
             with col2:
-                st.markdown(f"**{remix_icon('football-line')}Performance Metrics**", unsafe_allow_html=True)
+                st.markdown("**Performance Metrics**")
                 st.caption("*(According to Z-score normalization)*")
                 st.metric(perf_label_1, f"{perf_metric_1:.2f}")
                 st.metric(perf_label_2, f"{perf_metric_2:.2f}")
                     
             with col3:
-                st.markdown(f"**{remix_icon('trophy-line')}Top Teams by Player Count**", unsafe_allow_html=True)
+                st.markdown("**Top Teams by Player Count**")
                 top_teams = cluster_data['Squad'].value_counts().head(3)
                 for team, count in top_teams.items():
-                    st.markdown(f"{remix_icon('team-line')}{team} ({count} players)", unsafe_allow_html=True)
+                    st.markdown(f"• {team} ({count} players)")
         else:
-            st.markdown(f":information_source: {remix_icon('information-line')} No players found in this cluster after filtering.", unsafe_allow_html=True)
+            st.info("No players found in this player profile after filtering.")
                         
-        st.markdown(f"**{remix_icon('gamepad-line')}Playing Style**: {prof['detailed_stats'].get('playing_style', 'General midfielder')}", unsafe_allow_html=True)
+        st.markdown(f"**Playing Style**: {prof['detailed_stats'].get('playing_style', 'General midfielder')}")
         
         if 'key_strengths' in prof['detailed_stats']:
-            st.markdown(f"**{remix_icon('sword-line')}Key Strengths**: {', '.join(prof['detailed_stats']['key_strengths'])}", unsafe_allow_html=True)
+            st.markdown(f"**Key Strengths**: {', '.join(prof['detailed_stats']['key_strengths'])}")
 
 # ---------------------------
-# STEP 2: FILTERS & PLAYER SEARCH
+# STEP 2: SIDEBAR FILTERS
 # ---------------------------
-st.markdown(f"## {remix_icon('filter-line')}Filtering and Player Search", unsafe_allow_html=True)
-col1, col2, col3, col4, col5 = st.columns(5)
-with col1:
-    age_filter = st.slider("Age Range", int(df["Age"].min()), int(df["Age"].max()), (18, 24))
-with col2:
-    pos_filter = st.multiselect("Position", sorted(df["Pos"].unique()), default=df["Pos"].unique())
-with col3:
-    squad_filter = st.multiselect("Team", sorted(df["Squad"].unique()), default=df["Squad"].unique())
-with col4:
-    cluster_filter = st.multiselect("Select Cluster", sorted(df["Cluster"].unique()), default=df["Cluster"].unique())
-with col5:
-    player_search = st.text_input("Search Player (Name)")
+with st.sidebar:
+    st.markdown("## Filter Options")
+    st.markdown("---")
+    
+    # Age Filter
+    st.markdown("### Age Range")
+    age_filter = st.slider(
+        "Select age range", 
+        int(df["Age"].min()), 
+        int(df["Age"].max()), 
+        (18, 24),
+        help="Filter players by age"
+    )
+    
+    st.markdown("---")
+    
+    # Position Filter
+    st.markdown("### Position")
+    pos_filter = st.multiselect(
+        "Select positions", 
+        sorted(df["Pos"].unique()), 
+        default=df["Pos"].unique(),
+        help="Filter by player positions"
+    )
+    
+    st.markdown("---")
+    
+    # Team Filter
+    st.markdown("### Team")
+    squad_filter = st.multiselect(
+        "Select teams", 
+        sorted(df["Squad"].unique()), 
+        default=df["Squad"].unique(),
+        help="Filter by team"
+    )
+    
+    st.markdown("---")
+    
+    # Player Profile Filter
+    st.markdown("### Player Profile")
+    cluster_filter = st.multiselect(
+        "Select profiles", 
+        sorted(df["Cluster"].unique()), 
+        default=df["Cluster"].unique(),
+        format_func=lambda x: f"Profile {x}",
+        help="Filter by player profile type"
+    )
+    
+    st.markdown("---")
+    
+    # Player Search
+    st.markdown("### Player Search")
+    player_search = st.text_input(
+        "Enter player name", 
+        placeholder="e.g. Kenneth Taylor",
+        help="Search for specific players"
+    )
+    
+    # Reset button
+    if st.button("Reset All Filters", type="primary", use_container_width=True):
+        st.rerun()
 
 df_filtered = df[
     (df["Age"] >= age_filter[0]) &
@@ -289,13 +360,30 @@ df_filtered = df[
 if player_search:
     df_filtered = df_filtered[df_filtered["Player"].str.contains(player_search, case=False, na=False)]
 
-st.dataframe(df_filtered)
+# Filtered Results Section
+st.markdown("## 📋 Filtered Players")
+col1, col2, col3 = st.columns([2, 1, 1])
+with col1:
+    st.info(f"**{len(df_filtered)}** players match your filters")
+with col2:
+    if len(df_filtered) > 0:
+        st.success(f"Avg Age: **{df_filtered['Age'].mean():.1f}**")
+with col3:
+    if len(df_filtered) > 0:
+        st.success(f"Avg Minutes: **{df_filtered['std_Min'].mean():.0f}**")
+
+with st.expander("📊 View Detailed Player Data", expanded=False):
+    st.dataframe(df_filtered, use_container_width=True, height=400)
+
+st.divider()
 
 
 # ---------------------------
-# STEP 4: TOP 5 PLAYERS BY CLUSTER
+# STEP 4: TOP 5 PLAYERS BY PLAYER PROFILE
 # ---------------------------
-st.markdown(f"# {remix_icon('medal-line')}Top 5 Players by Cluster", unsafe_allow_html=True)
+st.markdown("# 🏆 Top 5 Players by Player Profile")
+st.caption("Discover the best performers in each player profile category")
+st.markdown("")
 
 # Metric sets suitable for cluster profiles (New 3 Clusters)
 cluster_metrics_map = {
@@ -308,108 +396,113 @@ cluster_metrics_map = {
 df_rank = df_filtered.copy()
 
 for cid, metrics in cluster_metrics_map.items():
-    st.subheader(f"Cluster {cid}: {cluster_profiles[cid]['name']}")
+    # Profile card with color coding
+    profile_colors = {0: '#F97316', 1: '#EC4899', 2: '#06B6D4'}
+    st.markdown(f"""
+        <div style='background: {profile_colors[cid]}; padding: 1rem; border-radius: 10px; margin: 1rem 0;'>
+            <h3 style='color: white; margin: 0;'>Profile {cid}: {cluster_profiles[cid]['name']}</h3>
+        </div>
+    """, unsafe_allow_html=True)
     
     # Calculate cluster statistics from real data
     cluster_data = df_filtered[df_filtered['Cluster'] == cid]
     
     # Show individual standout features of top 5 players
     if len(cluster_data) > 0:
-        st.markdown(f"**{remix_icon('star-line')}Outstanding Features of Top 5 Players:**", unsafe_allow_html=True)
-        
-        # Determine best players by cluster directly from CSV
-        if cid == 0:  # Elite Creative Attack
-            # Highest goal+assist combination
-            cluster_data_sorted = cluster_data.copy()
-            cluster_data_sorted['combined_score'] = cluster_data_sorted['std_Gls'] + cluster_data_sorted['std_Ast']
-            top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-            
-            for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                # Make specific comments for each player
-                gol = player['std_Gls']
-                asist = player['std_Ast']
-                xg = player['std_xG']
+        with st.expander(f"✨ Outstanding Features of Top 5 Players", expanded=True):
+            # Determine best players by cluster directly from CSV
+            if cid == 0:  # Elite Creative Attack
+                # Highest goal+assist combination
+                cluster_data_sorted = cluster_data.copy()
+                cluster_data_sorted['combined_score'] = cluster_data_sorted['std_Gls'] + cluster_data_sorted['std_Ast']
+                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
                 
-                # Generate comments
-                comment = ""
-                if gol > 1.5 and asist > 1.0:
-                    comment = f"{remix_icon('fire-line')}**Elite finisher and creator** - Both scores goals and provides assists"
-                elif gol > 2.0:
-                    comment = f"{remix_icon('football-line')}**Super goalscorer** - Team's most reliable goal machine"
-                elif asist > 1.5:
-                    comment = f"{remix_icon('crosshair-line')}**Playmaker** - Constantly sets up teammates for goals"
-                elif xg > 2.0:
-                    comment = f"{remix_icon('line-chart-line')}**High potential** - Statistically gets into very effective positions"
-                else:
-                    comment = f"{remix_icon('star-line')}**Balanced player** - Versatile profile contributing in many areas"
+                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
+                    # Make specific comments for each player
+                    gol = player['std_Gls']
+                    asist = player['std_Ast']
+                    xg = player['std_xG']
                     
-                st.write(f"**{idx}. {player['Player']}**: {comment}", unsafe_allow_html=True)
-                
-        elif cid == 1:  # Development Phase
-            # Highest pass success + playing time
-            cluster_data_sorted = cluster_data.copy()
-            cluster_data_sorted['combined_score'] = cluster_data_sorted['pass_Cmp%'] + (cluster_data_sorted['std_Min'] / 1000)  # Normalize minutes
-            top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-            
-            for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                # Make specific comments for each player
-                pas_success = player['pass_Cmp%']
-                minutes = player['std_Min']
-                play_ratio = player['pt_Min%']
-                
-                # Generate comments
-                comment = ""
-                if minutes > 2000 and pas_success > 0.5:
-                    comment = f"{remix_icon('star-line')}**Experienced reliable** - Plays a lot and has high pass quality"
-                elif minutes > 2000:
-                    comment = f"{remix_icon('heart-pulse-line')}**Hard-working engine** - Constantly plays in the team, gaining experience"
-                elif pas_success > 0.8:
-                    comment = f"{remix_icon('crosshair-line')}**Technical ability** - Very high pass quality, reliable"
-                elif play_ratio > 0.5:
-                    comment = f"{remix_icon('trending-up-line')}**Rising value** - Has gained coach's trust, potential"
-                else:
-                    comment = f"{remix_icon('seedling-line')}**Promising future** - Still raw but open to development profile"
+                    # Generate comments
+                    comment = ""
+                    if gol > 1.5 and asist > 1.0:
+                        comment = "**Elite finisher and creator** - Both scores goals and provides assists"
+                    elif gol > 2.0:
+                        comment = "**Super goalscorer** - Team's most reliable goal machine"
+                    elif asist > 1.5:
+                        comment = "**Playmaker** - Constantly sets up teammates for goals"
+                    elif xg > 2.0:
+                        comment = "**High potential** - Statistically gets into very effective positions"
+                    else:
+                        comment = "**Balanced player** - Versatile profile contributing in many areas"
+                        
+                    st.write(f"**{idx}. {player['Player']}**: {comment}")
                     
-                st.write(f"**{idx}. {player['Player']}**: {comment}", unsafe_allow_html=True)
+            elif cid == 1:  # Development Phase
+                # Highest pass success + playing time
+                cluster_data_sorted = cluster_data.copy()
+                cluster_data_sorted['combined_score'] = cluster_data_sorted['pass_Cmp%'] + (cluster_data_sorted['std_Min'] / 1000)  # Normalize minutes
+                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
                 
-        elif cid == 2:  # Defensive Engine
-            # Highest defensive contribution
-            cluster_data_sorted = cluster_data.copy()
-            cluster_data_sorted['combined_score'] = cluster_data_sorted['def_Tkl'] + cluster_data_sorted['misc_Recov']
-            top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-            
-            for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                # Make specific comments for each player
-                tackles = player['def_Tkl']
-                interceptions = player['def_Int']
-                recoveries = player['misc_Recov']
-                
-                # Generate comments
-                comment = ""
-                if tackles > 2.5 and recoveries > 2.5:
-                    comment = f"{remix_icon('shield-line')}**Defensive wall** - Both aggressive and intelligent defending"
-                elif tackles > 3.0:
-                    comment = f"{remix_icon('sword-line')}**Aggressive warrior** - Fighting style that doesn't let opponents breathe"
-                elif recoveries > 3.0:
-                    comment = f"{remix_icon('brain-line')}**Smart cleaner** - Master of ball recovery through positioning"
-                elif interceptions > 2.0:
-                    comment = f"{remix_icon('eye-line')}**Game reader** - Intelligent defender who intercepts opponent passes"
-                else:
-                    comment = f"{remix_icon('tools-line')}**Reliable worker** - Quiet but effective, team's indispensable"
+                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
+                    # Make specific comments for each player
+                    pas_success = player['pass_Cmp%']
+                    minutes = player['std_Min']
+                    play_ratio = player['pt_Min%']
                     
-                st.write(f"**{idx}. {player['Player']}**: {comment}", unsafe_allow_html=True)
+                    # Generate comments
+                    comment = ""
+                    if minutes > 2000 and pas_success > 0.5:
+                        comment = "**Experienced reliable** - Plays a lot and has high pass quality"
+                    elif minutes > 2000:
+                        comment = "**Hard-working engine** - Constantly plays in the team, gaining experience"
+                    elif pas_success > 0.8:
+                        comment = "**Technical ability** - Very high pass quality, reliable"
+                    elif play_ratio > 0.5:
+                        comment = "**Rising value** - Has gained coach's trust, potential"
+                    else:
+                        comment = "**Promising future** - Still raw but open to development profile"
+                        
+                    st.write(f"**{idx}. {player['Player']}**: {comment}")
+                    
+            elif cid == 2:  # Defensive Engine
+                # Highest defensive contribution
+                cluster_data_sorted = cluster_data.copy()
+                cluster_data_sorted['combined_score'] = cluster_data_sorted['def_Tkl'] + cluster_data_sorted['misc_Recov']
+                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
+                
+                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
+                    # Make specific comments for each player
+                    tackles = player['def_Tkl']
+                    interceptions = player['def_Int']
+                    recoveries = player['misc_Recov']
+                    
+                    # Generate comments
+                    comment = ""
+                    if tackles > 2.5 and recoveries > 2.5:
+                        comment = "**Defensive wall** - Both aggressive and intelligent defending"
+                    elif tackles > 3.0:
+                        comment = "**Aggressive warrior** - Fighting style that doesn't let opponents breathe"
+                    elif recoveries > 3.0:
+                        comment = "**Smart cleaner** - Master of ball recovery through positioning"
+                    elif interceptions > 2.0:
+                        comment = "**Game reader** - Intelligent defender who intercepts opponent passes"
+                    else:
+                        comment = "**Reliable worker** - Quiet but effective, team's indispensable"
+                        
+                    st.write(f"**{idx}. {player['Player']}**: {comment}")
     
-    st.caption(f"**Playing Style**: {cluster_profiles[cid]['detailed_stats'].get('playing_style', 'General midfield players')}")
+    st.info(f"**Playing Style**: {cluster_profiles[cid]['detailed_stats'].get('playing_style', 'General midfield players')}")
 
-    # Is this cluster available in selected filter?
+    # Is this player profile available in selected filter?
     if cid not in df_rank["Cluster"].unique():
-        st.markdown(f":information_source: {remix_icon('information-line')} No players found in this cluster matching filtering criteria.", unsafe_allow_html=True)
+        st.info("No players found in this player profile matching filtering criteria.")
         continue
 
     # Only available metrics
     available_metrics = [m for m in metrics if m in df_rank.columns]
     if not available_metrics:
-        st.markdown(f":warning: {remix_icon('alert-line')} No valid metrics found for this cluster.", unsafe_allow_html=True)
+        st.warning("No valid metrics found for this player profile.")
         continue
 
     # Normalization
@@ -427,35 +520,68 @@ for cid, metrics in cluster_metrics_map.items():
     show_cols = ["Player","Age","Pos","Squad",f"Cluster{cid}_Score"] + available_metrics
     renamed_cols = {col: column_info.get(col, col) for col in show_cols}
 
-    st.dataframe(top_players[show_cols].rename(columns=renamed_cols))
+    st.markdown("**📊 Top 5 Rankings:**")
+    st.dataframe(
+        top_players[show_cols].rename(columns=renamed_cols),
+        use_container_width=True,
+        height=250
+    )
+    
+    st.divider()
 # ---------------------------
-# STEP 3: RADAR + SIMILAR PLAYERS + CLUSTER PROFILE
+# STEP 3: RADAR + SIMILAR PLAYERS + PLAYER PROFILE
 # ---------------------------
-st.markdown(f"## {remix_icon('radar-line')}Professional Radar Chart, Similar Players and Cluster Profile", unsafe_allow_html=True)
+st.markdown("# 🎯 Player Analysis & Comparison")
+st.caption("Deep dive into individual player performance with radar charts and similarity analysis")
+
+# Instructions box
+with st.expander("ℹ️ How to use this section", expanded=False):
+    st.markdown("""
+    **Steps:**
+    1. Select one or more players from the dropdown below
+    2. View their performance radar charts across multiple categories
+    3. See similar players based on statistical similarity
+    4. Compare selected players against profile averages
+    5. Download detailed reports in Excel or PDF format
+    
+    **Tips:**
+    - Select multiple players to compare them directly
+    - Click on legend items in charts to show/hide specific data
+    - Use sidebar filters to narrow down player selection
+    """)
+
+st.markdown("---")
 
 # Initial radar metrics
 radar_metrics = ['std_MP','std_Min','std_90s','std_Gls','std_Ast','std_xG','std_xAG','misc_Fls','std_CrdY','std_CrdR']
 
-player_select = st.multiselect("Select Player (Multiple selection possible)", df_filtered["Player"].unique(), default=[], key="player_select")
+st.markdown("### 👤 Select Players for Analysis")
+player_select = st.multiselect(
+    "Choose one or more players", 
+    df_filtered["Player"].unique(), 
+    default=[], 
+    key="player_select",
+    help="You can select multiple players for comparison"
+)
 
 def update_player_view(selected_players):
     if not selected_players:
-        st.markdown(f":information_source: {remix_icon('information-line')} Please select the player(s) you want to analyze.", unsafe_allow_html=True)
+        st.info("Please select the player(s) you want to analyze.")
         return
         
     # Get data of selected players
     selected_rows = df_filtered[df_filtered["Player"].isin(selected_players)]
     if selected_rows.empty:
-        st.markdown(f":warning: {remix_icon('alert-line')} Selected players are outside filtering criteria.", unsafe_allow_html=True)
+        st.warning("Selected players are outside filtering criteria.")
         return
 
-    # Cluster information of selected players
+    # Player Profile information of selected players
     unique_clusters = selected_rows["Cluster"].unique()
     
-    # Show cluster information
+    # Show player profile information
     for cluster_id in unique_clusters:
         players_in_cluster = selected_rows[selected_rows["Cluster"] == cluster_id]["Player"].tolist()
-        st.write(f"**Cluster {cluster_id}: {cluster_profiles[cluster_id]['name']}** → {', '.join(players_in_cluster)}")
+        st.write(f"**Player Profile {cluster_id}: {cluster_profiles[cluster_id]['name']}** → {', '.join(players_in_cluster)}")
         st.caption(cluster_profiles[cluster_id]['description'])
 
     # ---------------------------
@@ -489,8 +615,8 @@ def update_player_view(selected_players):
                 line=dict(color=color, width=3)
             ))
     
-    # Add cluster averages
-    cluster_colors = ['#F97316', '#EC4899', '#06B6D4']  # For 3 clusters: Orange, Pink, Turquoise
+    # Add player profile averages
+    cluster_colors = ['#F97316', '#EC4899', '#06B6D4']  # For 3 player profiles: Orange, Pink, Turquoise
     for idx, cluster_id in enumerate(unique_clusters):
         cluster_mean_scaled = df_scaled[df_filtered["Cluster"] == cluster_id].mean()
         cluster_color = cluster_colors[cluster_id % len(cluster_colors)]
@@ -502,7 +628,7 @@ def update_player_view(selected_players):
             r=r_cluster_values, 
             theta=theta_cluster_values, 
             fill='toself', 
-            name=f"Cluster {cluster_id} Average", 
+            name=f"Player Profile {cluster_id} Average", 
             line=dict(color=cluster_color, width=3, dash='dot'), 
             opacity=0.6,
             visible='legendonly'
@@ -511,7 +637,7 @@ def update_player_view(selected_players):
     fig_radar.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[0,1])),
         showlegend=True, 
-        title="Selected Players vs Cluster Averages",
+        title="Selected Players vs Player Profile Averages",
         template='plotly_dark', 
         title_font=dict(size=20), 
         legend=dict(font=dict(size=12))
@@ -566,7 +692,7 @@ def update_player_view(selected_players):
                     line=dict(color=color, width=3)
                 ))
         
-        # Add cluster averages
+        # Add player profile averages
         for idx, cluster_id in enumerate(unique_clusters):
             cluster_mean_cat = df_cat_scaled[df_filtered["Cluster"] == cluster_id].mean()
             cluster_color = cluster_colors[cluster_id % len(cluster_colors)]
@@ -578,7 +704,7 @@ def update_player_view(selected_players):
                 r=r_cat_cluster_values, 
                 theta=theta_cat_cluster_values, 
                 fill='toself', 
-                name=f"Cluster {cluster_id} Average", 
+                name=f"Player Profile {cluster_id} Average", 
                 line=dict(color=cluster_color, width=3, dash='dot'), 
                 opacity=0.6,
                 visible='legendonly'
@@ -588,7 +714,7 @@ def update_player_view(selected_players):
             polar=dict(radialaxis=dict(visible=True, range=[0,1])),
             showlegend=True,
             template='plotly_dark',
-            title=f"{category} - Selected Players vs Cluster Averages",
+            title=f"{category} - Selected Players vs Player Profile Averages",
             title_font=dict(size=20),
             legend=dict(font=dict(size=12))
         )
@@ -599,7 +725,7 @@ def update_player_view(selected_players):
     # ---------------------------
     # 3️⃣ Similar Players
     # ---------------------------
-    st.markdown(f"## {remix_icon('user-search-line')}Similar Players", unsafe_allow_html=True)
+    st.markdown("## Similar Players")
     
     # Find similar players for each selected player
     for player_name in selected_players:
@@ -615,14 +741,14 @@ def update_player_view(selected_players):
             st.dataframe(similar_players[["Player","Pos","Squad","Age","Cluster"] + radar_metrics])
 
     # ---------------------------
-    # 4️⃣ Compare All Clusters
+    # 4️⃣ Compare All Player Profiles
     # ---------------------------
-    st.markdown(f"## {remix_icon('pie-chart-line')}Compare All Clusters", unsafe_allow_html=True)
+    st.markdown("## Compare All Player Profiles")
     df_scaled_all = pd.DataFrame(MinMaxScaler().fit_transform(df_filtered[radar_metrics]),
                                  columns=radar_metrics, index=df_filtered.index)
     cluster_means_scaled = df_scaled_all.groupby(df_filtered["Cluster"]).mean()
     fig_all = go.Figure()
-    colors = ['#F97316','#EC4899','#06B6D4']  # For 3 clusters: Orange, Pink, Turquoise
+    colors = ['#F97316','#EC4899','#06B6D4']  # For 3 player profiles: Orange, Pink, Turquoise
     for idx, (cid,row) in enumerate(cluster_means_scaled.iterrows()):
         # Create closed polygon by adding first value to the end
         r_all_values = list(row.values) + [row.values[0]]
@@ -632,14 +758,14 @@ def update_player_view(selected_players):
             r=r_all_values,
             theta=theta_all_values,
             fill='toself',
-            name=f"Cluster {cid}",
+            name=f"Player Profile {cid}",
             line=dict(width=2,color=colors[idx%len(colors)]),
             opacity=0.7
         ))
     fig_all.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[0,1])),
         showlegend=True,
-        title="Comparison of All Clusters",
+        title="Comparison of All Player Profiles",
         template='plotly_dark'
     )
     st.plotly_chart(fig_all, use_container_width=True, key="all_clusters_radar")
@@ -647,7 +773,7 @@ def update_player_view(selected_players):
     # ---------------------------
     # 5️⃣ PDF / Excel Report
     # ---------------------------
-    st.markdown(f"## {remix_icon('download-line')}Download Report", unsafe_allow_html=True)
+    st.markdown("## Download Report")
     
     if len(selected_players) == 1:
         # Current format for single player
@@ -674,7 +800,7 @@ def update_player_view(selected_players):
         pdf.set_font("Arial", size=12)
         pdf.cell(200, 10, txt=f"{player_name} - Similar Players", ln=True)
         for idx, row in similar_players.iterrows():
-            line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Cluster {row['Cluster']}"
+            line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Profile {row['Cluster']}"
             pdf.cell(200, 10, txt=line, ln=True)
         pdf_output = pdf.output(dest='S').encode('latin-1')
         st.download_button(label=f"{player_name} - Download Similar Players PDF",
@@ -702,7 +828,7 @@ def update_player_view(selected_players):
         pdf.cell(200, 10, txt=f"Player Comparison - {len(selected_players)} Players", ln=True)
         pdf.ln(5)
         for idx, row in comparison_data.iterrows():
-            line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Age: {row['Age']} | Cluster: {row['Cluster']}"
+            line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Age: {row['Age']} | Profile: {row['Cluster']}"
             pdf.cell(200, 10, txt=line, ln=True)
         pdf_output = pdf.output(dest='S').encode('latin-1')
         st.download_button(label="Selected Players Comparison - Download PDF",
@@ -715,25 +841,40 @@ update_player_view(player_select)
 # ---------------------------
 # STEP 6: SCATTER PLOT ANALYSES
 # ---------------------------
-st.markdown(f"# {remix_icon('scatter-chart-line')}Advanced Scatter Plot Analyses", unsafe_allow_html=True)
-st.markdown("Explore relationships between different player metrics through interactive scatter plots.")
+st.markdown("# 📈 Advanced Scatter Plot Analyses")
+st.caption("Explore correlations and relationships between different player metrics")
+
+with st.expander("ℹ️ Understanding Scatter Plots", expanded=False):
+    st.markdown("""
+    **What are scatter plots?**
+    - Each point represents one player
+    - Colors indicate player profiles
+    - Hover over points to see detailed information
+    
+    **How to interpret:**
+    - Points in top-right indicate high performance in both metrics
+    - Clusters show groups of similar players
+    - Outliers indicate unique player characteristics
+    """)
+
+st.markdown("---")
 
 # Create tabs for different scatter plot analyses
 tab1, tab2, tab3, tab4 = st.tabs([
-    f"Age vs Performance", 
-    f"Minutes vs Effectiveness",
-    f"Passing vs Creativity", 
-    f"Defense vs Attack"
+    "📊 Age vs Performance", 
+    "⏱️ Minutes vs Effectiveness",
+    "🎯 Passing vs Creativity", 
+    "⚔️ Defense vs Attack"
 ])
 
 with tab1:
-    st.markdown(f"### {remix_icon('user-line')}Age vs Performance Analysis", unsafe_allow_html=True)
+    st.markdown("### Age vs Performance Analysis")
     st.markdown("Analyze how player age correlates with goal and assist performance.")
     
     # Age vs Performance Scatter Plot
     fig_age = go.Figure()
     
-    # Color by cluster
+    # Color by player profile
     cluster_colors_scatter = {0: '#F97316', 1: '#EC4899', 2: '#06B6D4'}
     cluster_names = {0: 'Elite Creative', 1: 'Developing', 2: 'Defensive Engines'}
     
@@ -744,7 +885,7 @@ with tab1:
             x=cluster_data['Age'],
             y=cluster_data['std_Gls'] + cluster_data['std_Ast'],
             mode='markers',
-            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            name=f'Profile {cluster_id}: {cluster_names[cluster_id]}',
             text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
             hovertemplate='<b>%{text}</b><br>' +
                          'Age: %{x}<br>' +
@@ -779,7 +920,7 @@ with tab1:
         st.metric("Avg Age of Top Contributors", f"{avg_age_top_performers:.1f}" if not pd.isna(avg_age_top_performers) else "N/A")
 
 with tab2:
-    st.markdown(f"### {remix_icon('dashboard-line')}Playing Time vs Effectiveness", unsafe_allow_html=True)
+    st.markdown("### Playing Time vs Effectiveness")
     st.markdown("Examine the relationship between minutes played and expected goal contributions.")
     
     # Minutes vs Effectiveness Scatter Plot
@@ -792,7 +933,7 @@ with tab2:
             x=cluster_data['std_Min'],
             y=cluster_data['std_xG'] + cluster_data['std_xAG'],
             mode='markers',
-            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            name=f'Profile {cluster_id}: {cluster_names[cluster_id]}',
             text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
             hovertemplate='<b>%{text}</b><br>' +
                          'Minutes: %{x}<br>' +
@@ -834,7 +975,7 @@ with tab2:
         st.metric("Average Minutes Played", f"{avg_minutes:.0f}")
 
 with tab3:
-    st.markdown(f"### {remix_icon('route-line')}Passing Accuracy vs Creativity", unsafe_allow_html=True)
+    st.markdown("### Passing Accuracy vs Creativity")
     st.markdown("Discover the balance between safe passing and creative playmaking.")
     
     # Passing vs Creativity Scatter Plot
@@ -847,7 +988,7 @@ with tab3:
             x=cluster_data['pass_Cmp%'],
             y=cluster_data['pass_KP'],
             mode='markers',
-            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            name=f'Profile {cluster_id}: {cluster_names[cluster_id]}',
             text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
             hovertemplate='<b>%{text}</b><br>' +
                          'Pass Success: %{x:.1%}<br>' +
@@ -890,7 +1031,7 @@ with tab3:
             st.metric("Most Creative Player", "N/A")
 
 with tab4:
-    st.markdown(f"### {remix_icon('sword-line')}Defensive vs Offensive Contributions", unsafe_allow_html=True)
+    st.markdown("### Defensive vs Offensive Contributions")
     st.markdown("Compare players' defensive work rate with their attacking output.")
     
     # Defense vs Attack Scatter Plot
@@ -903,7 +1044,7 @@ with tab4:
             x=cluster_data['def_Tkl'] + cluster_data['def_Int'],
             y=cluster_data['std_Gls'] + cluster_data['std_Ast'],
             mode='markers',
-            name=f'Cluster {cluster_id}: {cluster_names[cluster_id]}',
+            name=f'Profile {cluster_id}: {cluster_names[cluster_id]}',
             text=cluster_data['Player'] + '<br>' + cluster_data['Squad'],
             hovertemplate='<b>%{text}</b><br>' +
                          'Tackles + Interceptions: %{x:.2f}<br>' +
@@ -948,13 +1089,16 @@ with tab4:
         else:
             st.metric("Most Balanced Player", "N/A")
 
+st.divider()
+
 # Summary insights section
-st.markdown(f"## {remix_icon('lightbulb-line')}Key Insights from Scatter Analysis", unsafe_allow_html=True)
+st.markdown("## 💡 Key Insights from Scatter Analysis")
+st.caption("Statistical correlations and standout performers")
 
 insights_col1, insights_col2 = st.columns(2)
 
 with insights_col1:
-    st.markdown(f"### {remix_icon('trending-up-line')}Performance Trends", unsafe_allow_html=True)
+    st.markdown("### Performance Trends")
     
     # Calculate correlations
     age_performance_corr = df_filtered['Age'].corr(df_filtered['std_Gls'] + df_filtered['std_Ast'])
@@ -971,7 +1115,7 @@ with insights_col1:
         st.info("Age has minimal impact on performance")
 
 with insights_col2:
-    st.markdown(f"### {remix_icon('award-line')}Standout Players", unsafe_allow_html=True)
+    st.markdown("### Standout Players")
     
     # Find standout players in different categories
     young_players = df_filtered[df_filtered['Age'] <= 20]
@@ -1004,18 +1148,33 @@ with insights_col2:
 # ---------------------------
 # STEP 7: LINE CHART/TREND ANALYSES
 # ---------------------------
-st.markdown(f"# {remix_icon('line-chart-line')}Trend & Line Chart Analyses", unsafe_allow_html=True)
-st.markdown("Discover performance trends across different dimensions with interactive line charts.")
+st.markdown("# 📉 Trend & Line Chart Analyses")
+st.caption("Discover performance trends across different dimensions")
+
+with st.expander("ℹ️ How to read trend charts", expanded=False):
+    st.markdown("""
+    **Understanding trends:**
+    - Line charts show average performance at different levels
+    - Multiple lines allow comparison across metrics
+    - Peaks indicate optimal performance ranges
+    
+    **Use cases:**
+    - Identify age peaks for different skills
+    - Compare team performance levels
+    - Understand playing time impact on performance
+    """)
+
+st.markdown("---")
 
 # Create tabs for different trend analyses
 trend_tab1, trend_tab2, trend_tab3= st.tabs([
-    "Age Trends", 
-    "Playing Time Trends",
-    "Team Performance Trends", 
+    "👤 Age Trends", 
+    "⏱️ Playing Time Trends",
+    "🏆 Team Performance Trends", 
 ])
 
 with trend_tab1:
-    st.markdown(f"### {remix_icon('user-line')}Performance Trends by Age", unsafe_allow_html=True)
+    st.markdown("### Performance Trends by Age")
     st.markdown("Analyze how different performance metrics change with player age.")
     
     # Age trend analysis
@@ -1123,7 +1282,7 @@ with trend_tab1:
         st.info("Not enough data for age trend analysis")
 
 with trend_tab2:
-    st.markdown(f"### {remix_icon('timer-line')}Performance vs Playing Time", unsafe_allow_html=True)
+    st.markdown("### Performance vs Playing Time")
     st.markdown("Examine how performance metrics correlate with minutes played.")
     
     # Create minutes bins for trend analysis
@@ -1203,7 +1362,7 @@ with trend_tab2:
         st.info("Not enough data for minutes trend analysis")
 
 with trend_tab3:
-    st.markdown(f"### {remix_icon('team-line')}Team Performance Comparison", unsafe_allow_html=True)
+    st.markdown("### Team Performance Comparison")
     st.markdown("Compare average performance metrics across different teams.")
     
     # Team performance analysis
@@ -1308,12 +1467,12 @@ with trend_tab3:
 
 
 # Trend Summary Section
-st.markdown(f"## {remix_icon('trending-up-line')}Key Trend Insights", unsafe_allow_html=True)
+st.markdown("## Key Trend Insights")
 
 trend_insights_col1, trend_insights_col2 = st.columns(2)
 
 with trend_insights_col1:
-    st.markdown(f"### {remix_icon('chart-line')}Performance Patterns", unsafe_allow_html=True)
+    st.markdown("### Performance Patterns")
     
     if not df_filtered.empty:
         # Age-performance correlation
@@ -1338,7 +1497,7 @@ with trend_insights_col1:
             st.info("🔄 Age doesn't affect defensive work")
 
 with trend_insights_col2:
-    st.markdown(f"### {remix_icon('trophy-line')}Peak Performance Insights", unsafe_allow_html=True)
+    st.markdown("### Peak Performance Insights")
     
     if not df_filtered.empty:
         # Find peak performers in different age ranges
@@ -1364,6 +1523,512 @@ with trend_insights_col2:
             trend_direction = "increasing" if avg_goals_by_age.iloc[-1] > avg_goals_by_age.iloc[0] else "decreasing"
             st.write(f"• **Overall Goal Trend**: {trend_direction} with age")
 
+# ---------------------------
+# STEP 8: HISTOGRAM ANALYSES
+# ---------------------------
+st.markdown("# 📊 Distribution Analysis (Histograms)")
+st.caption("Understand how player metrics are distributed across the dataset")
 
+with st.expander("ℹ️ Reading histograms", expanded=False):
+    st.markdown("""
+    **What do histograms show?**
+    - Height of bars indicates number of players in each range
+    - Different colors represent different player profiles
+    - Use 'overlay' mode to see profile distributions
+    
+    **Key insights:**
+    - Identify common performance ranges
+    - Spot outliers and exceptional players
+    - Compare profile distributions
+    """)
+
+st.markdown("---")
+
+# Create tabs for different histogram categories
+hist_tab1, hist_tab2, hist_tab3, hist_tab4 = st.tabs([
+    "⚽ Performance Metrics",
+    "⏱️ Playing Time",
+    "🎯 Technical Skills",
+    "💪 Physical & Discipline"
+])
+
+with hist_tab1:
+    st.markdown("### Goal & Assist Distribution")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Goals histogram
+        fig_goals_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_goals_hist.add_trace(go.Histogram(
+                x=cluster_data['std_Gls'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_goals_hist.update_layout(
+            title="Goals per Game Distribution",
+            xaxis_title="Goals per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_goals_hist, use_container_width=True)
+        
+        # Stats
+        st.metric("Average Goals", f"{df_filtered['std_Gls'].mean():.2f}")
+        st.metric("Median Goals", f"{df_filtered['std_Gls'].median():.2f}")
+    
+    with col2:
+        # Assists histogram
+        fig_assists_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_assists_hist.add_trace(go.Histogram(
+                x=cluster_data['std_Ast'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_assists_hist.update_layout(
+            title="Assists per Game Distribution",
+            xaxis_title="Assists per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_assists_hist, use_container_width=True)
+        
+        # Stats
+        st.metric("Average Assists", f"{df_filtered['std_Ast'].mean():.2f}")
+        st.metric("Median Assists", f"{df_filtered['std_Ast'].median():.2f}")
+    
+    # Combined G+A histogram
+    st.markdown("### Total Goal Contributions (G+A)")
+    
+    df_filtered_copy = df_filtered.copy()
+    df_filtered_copy['G+A'] = df_filtered_copy['std_Gls'] + df_filtered_copy['std_Ast']
+    
+    fig_ga_hist = go.Figure()
+    
+    for cluster_id in sorted(df_filtered['Cluster'].unique()):
+        cluster_data = df_filtered_copy[df_filtered_copy['Cluster'] == cluster_id]
+        fig_ga_hist.add_trace(go.Histogram(
+            x=cluster_data['G+A'],
+            name=f'Cluster {cluster_id}',
+            opacity=0.7,
+            nbinsx=20
+        ))
+    
+    fig_ga_hist.update_layout(
+        title="Goal Contributions Distribution by Cluster",
+        xaxis_title="Goals + Assists per Game",
+        yaxis_title="Number of Players",
+        template='plotly_dark',
+        barmode='overlay',
+        height=400
+    )
+    
+    st.plotly_chart(fig_ga_hist, use_container_width=True)
+
+with hist_tab2:
+    st.markdown("### Playing Time Distribution")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Minutes histogram
+        fig_minutes_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_minutes_hist.add_trace(go.Histogram(
+                x=cluster_data['std_Min'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_minutes_hist.update_layout(
+            title="Minutes Played Distribution",
+            xaxis_title="Total Minutes",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_minutes_hist, use_container_width=True)
+        
+        st.metric("Average Minutes", f"{df_filtered['std_Min'].mean():.0f}")
+        st.metric("Median Minutes", f"{df_filtered['std_Min'].median():.0f}")
+    
+    with col2:
+        # Matches played histogram
+        fig_matches_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_matches_hist.add_trace(go.Histogram(
+                x=cluster_data['std_MP'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_matches_hist.update_layout(
+            title="Matches Played Distribution",
+            xaxis_title="Number of Matches",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_matches_hist, use_container_width=True)
+        
+        st.metric("Average Matches", f"{df_filtered['std_MP'].mean():.1f}")
+        st.metric("Median Matches", f"{df_filtered['std_MP'].median():.1f}")
+    
+    # Age distribution
+    st.markdown("### Age Distribution")
+    
+    fig_age_hist = go.Figure()
+    
+    for cluster_id in sorted(df_filtered['Cluster'].unique()):
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        fig_age_hist.add_trace(go.Histogram(
+            x=cluster_data['Age'],
+            name=f'Cluster {cluster_id}',
+            opacity=0.7,
+            nbinsx=10
+        ))
+    
+    fig_age_hist.update_layout(
+        title="Player Age Distribution by Cluster",
+        xaxis_title="Age",
+        yaxis_title="Number of Players",
+        template='plotly_dark',
+        barmode='stack',
+        height=400
+    )
+    
+    st.plotly_chart(fig_age_hist, use_container_width=True)
+
+with hist_tab3:
+    st.markdown("### Technical Skills Distribution")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Pass completion histogram
+        fig_pass_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_pass_hist.add_trace(go.Histogram(
+                x=cluster_data['pass_Cmp%'] * 100,  # Convert to percentage
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=20
+            ))
+        
+        fig_pass_hist.update_layout(
+            title="Pass Completion Rate Distribution",
+            xaxis_title="Pass Success Rate (%)",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_pass_hist, use_container_width=True)
+        
+        st.metric("Avg Pass Success", f"{df_filtered['pass_Cmp%'].mean()*100:.1f}%")
+    
+    with col2:
+        # Key passes histogram
+        fig_kp_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_kp_hist.add_trace(go.Histogram(
+                x=cluster_data['pass_KP'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_kp_hist.update_layout(
+            title="Key Passes Distribution",
+            xaxis_title="Key Passes per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_kp_hist, use_container_width=True)
+        
+        st.metric("Avg Key Passes", f"{df_filtered['pass_KP'].mean():.2f}")
+    
+    # Progressive passes and carries
+    st.markdown("### Progressive Play")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig_prog_pass = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_prog_pass.add_trace(go.Histogram(
+                x=cluster_data['pass_PrgP'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_prog_pass.update_layout(
+            title="Progressive Passes Distribution",
+            xaxis_title="Progressive Passes per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=350
+        )
+        
+        st.plotly_chart(fig_prog_pass, use_container_width=True)
+    
+    with col2:
+        fig_prog_carry = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_prog_carry.add_trace(go.Histogram(
+                x=cluster_data['poss_PrgC'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_prog_carry.update_layout(
+            title="Progressive Carries Distribution",
+            xaxis_title="Progressive Carries per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=350
+        )
+        
+        st.plotly_chart(fig_prog_carry, use_container_width=True)
+
+with hist_tab4:
+    st.markdown("### Defensive Actions Distribution")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Tackles histogram
+        fig_tackles_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_tackles_hist.add_trace(go.Histogram(
+                x=cluster_data['def_Tkl'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_tackles_hist.update_layout(
+            title="Tackles per Game Distribution",
+            xaxis_title="Tackles per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_tackles_hist, use_container_width=True)
+        
+        st.metric("Avg Tackles", f"{df_filtered['def_Tkl'].mean():.2f}")
+    
+    with col2:
+        # Interceptions histogram
+        fig_int_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_int_hist.add_trace(go.Histogram(
+                x=cluster_data['def_Int'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_int_hist.update_layout(
+            title="Interceptions per Game Distribution",
+            xaxis_title="Interceptions per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=400
+        )
+        
+        st.plotly_chart(fig_int_hist, use_container_width=True)
+        
+        st.metric("Avg Interceptions", f"{df_filtered['def_Int'].mean():.2f}")
+    
+    # Ball recoveries
+    st.markdown("### Ball Recoveries")
+    
+    fig_recov_hist = go.Figure()
+    
+    for cluster_id in sorted(df_filtered['Cluster'].unique()):
+        cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+        fig_recov_hist.add_trace(go.Histogram(
+            x=cluster_data['misc_Recov'],
+            name=f'Cluster {cluster_id}',
+            opacity=0.7,
+            nbinsx=20
+        ))
+    
+    fig_recov_hist.update_layout(
+        title="Ball Recoveries Distribution by Cluster",
+        xaxis_title="Recoveries per Game",
+        yaxis_title="Number of Players",
+        template='plotly_dark',
+        barmode='overlay',
+        height=400
+    )
+    
+    st.plotly_chart(fig_recov_hist, use_container_width=True)
+    
+    # Discipline
+    st.markdown("### Discipline (Cards)")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig_yellow_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_yellow_hist.add_trace(go.Histogram(
+                x=cluster_data['std_CrdY'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=10
+            ))
+        
+        fig_yellow_hist.update_layout(
+            title="Yellow Cards Distribution",
+            xaxis_title="Yellow Cards",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=350
+        )
+        
+        st.plotly_chart(fig_yellow_hist, use_container_width=True)
+    
+    with col2:
+        fig_fouls_hist = go.Figure()
+        
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            fig_fouls_hist.add_trace(go.Histogram(
+                x=cluster_data['misc_Fls'],
+                name=f'Profile {cluster_id}',
+                opacity=0.7,
+                nbinsx=15
+            ))
+        
+        fig_fouls_hist.update_layout(
+            title="Fouls Committed Distribution",
+            xaxis_title="Fouls per Game",
+            yaxis_title="Number of Players",
+            template='plotly_dark',
+            barmode='overlay',
+            height=350
+        )
+        
+        st.plotly_chart(fig_fouls_hist, use_container_width=True)
+
+st.divider()
+
+# Distribution Summary
+st.markdown("## 💡 Distribution Insights")
+st.caption("Key findings from distribution analysis")
+
+insights_col1, insights_col2, insights_col3 = st.columns(3)
+
+with insights_col1:
+    st.markdown("### Top Performers")
+    
+    if not df_filtered.empty:
+        # Most prolific scorer
+        top_scorer = df_filtered.nlargest(1, 'std_Gls')
+        if not top_scorer.empty:
+            st.write(f"🥇 **Top Scorer**: {top_scorer.iloc[0]['Player']} ({top_scorer.iloc[0]['std_Gls']:.2f} goals/game)")
+        
+        # Most creative
+        top_assists = df_filtered.nlargest(1, 'std_Ast')
+        if not top_assists.empty:
+            st.write(f"🎯 **Top Assister**: {top_assists.iloc[0]['Player']} ({top_assists.iloc[0]['std_Ast']:.2f} assists/game)")
+        
+        # Most minutes
+        most_minutes = df_filtered.nlargest(1, 'std_Min')
+        if not most_minutes.empty:
+            st.write(f"⏱️ **Most Minutes**: {most_minutes.iloc[0]['Player']} ({most_minutes.iloc[0]['std_Min']:.0f} min)")
+
+with insights_col2:
+    st.markdown("### Distribution Stats")
+    
+    if not df_filtered.empty:
+        # Goals standard deviation
+        goals_std = df_filtered['std_Gls'].std()
+        st.write(f"📊 **Goals Variation**: σ = {goals_std:.3f}")
+        
+        # Pass accuracy range
+        pass_range = df_filtered['pass_Cmp%'].max() - df_filtered['pass_Cmp%'].min()
+        st.write(f"🎯 **Pass Accuracy Range**: {pass_range*100:.1f}%")
+        
+        # Age diversity
+        age_range = df_filtered['Age'].max() - df_filtered['Age'].min()
+        st.write(f"👥 **Age Range**: {age_range:.0f} years")
+
+with insights_col3:
+    st.markdown("### Player Profile Characteristics")
+    
+    if not df_filtered.empty:
+        for cluster_id in sorted(df_filtered['Cluster'].unique()):
+            cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
+            cluster_size = len(cluster_data)
+            cluster_pct = (cluster_size / len(df_filtered)) * 100
+            
+            st.write(f"**Profile {cluster_id}**: {cluster_size} players ({cluster_pct:.1f}%)")
+
+st.divider()
+
+# Footer
+st.markdown("""
+    <div style='text-align: center; padding: 2.5rem 0; background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%); border-radius: 8px; margin-top: 2rem;'>
+        <p style='margin: 0; color: white; font-size: 1.1rem; font-weight: 600;'>Eredivisie U24 Midfielders Scouting Dashboard</p>
+        <p style='margin: 0.8rem 0 0 0; font-size: 0.95rem; color: #BDC3C7;'>Professional player analysis and comparison tool</p>
+        <p style='margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #95A5A6;'>Data-driven insights for scouts and analysts</p>
+    </div>
+""", unsafe_allow_html=True)
 
 #streamlit run streamlit_app.py
