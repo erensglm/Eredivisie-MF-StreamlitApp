@@ -1,0 +1,16 @@
+[theme]
+# Slider'ın seçili aralık çubuğunu gri yapmak için
+primaryColor = "#6B7280"
+
+# Arka plan beyaz
+backgroundColor = "#FFFFFF"
+
+# İkincil arka plan açık gri
+secondaryBackgroundColor = "#F0F2F6"
+
+# Metin rengi koyu
+textColor = "#262730"
+
+# Font
+font = "sans serif"
+

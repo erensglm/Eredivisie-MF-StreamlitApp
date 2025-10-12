@@ -7,17 +7,207 @@ from fpdf import FPDF
 from sklearn.preprocessing import MinMaxScaler
 import os
 
-# Professional styling
+# Modern Professional Styling with Gradients
 st.markdown("""
 <style>
-    /* Professional color scheme */
-    :root {
-        --primary-color: #2C3E50;
-        --secondary-color: #34495E;
-        --accent-color: #3498DB;
-        --success-color: #27AE60;
-        --warning-color: #F39C12;
-        --danger-color: #E74C3C;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    /* Global Styles */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Main container - Eredivisie theme */
+    .main {
+        background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F0 50%, #FFEBE0 100%);
+    }
+    
+    /* Custom gradient backgrounds */
+    .gradient-text {
+        background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }
+    
+    /* Sidebar styling - Eredivisie orange */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #FF6600 0%, #E55D00 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    /* Metric cards - Eredivisie orange */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Buttons - Eredivisie orange */
+    .stButton > button {
+        background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 102, 0, 0.6);
+    }
+    
+    /* Expander container - Add spacing between expanders */
+    [data-testid="stExpander"] {
+        margin: 1.5rem 0 !important;
+    }
+    
+    /* Expander styling - Eredivisie orange theme */
+    .streamlit-expanderHeader {
+        background: rgba(255, 102, 0, 0.1);
+        border-radius: 12px;
+        border: 2px solid rgba(255, 102, 0, 0.3);
+        font-weight: 600;
+        padding: 1rem 1.5rem !important;
+        color: #FF6600 !important;
+        box-shadow: 0 4px 15px rgba(255, 102, 0, 0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: rgba(255, 102, 0, 0.15);
+        box-shadow: 0 6px 25px rgba(255, 102, 0, 0.3);
+        transform: translateY(-2px);
+        border: 2px solid rgba(255, 133, 51, 0.5);
+    }
+    
+    .streamlit-expanderHeader svg {
+        stroke: #FF6600 !important;
+        filter: drop-shadow(0 2px 4px rgba(255, 102, 0, 0.3));
+    }
+    
+    .streamlit-expanderHeader p {
+        color: #FF6600 !important;
+    }
+    
+    .streamlit-expanderHeader span {
+        color: #FF6600 !important;
+    }
+    
+    [data-testid="stExpanderDetails"] {
+        border: 2px solid rgba(255, 102, 0, 0.2);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        background: rgba(255, 102, 0, 0.05);
+        padding: 1.5rem;
+        margin-top: -2px;
+    }
+    
+    /* Dataframe styling */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Tabs - Eredivisie orange theme */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: linear-gradient(135deg, rgba(255, 102, 0, 0.1) 0%, rgba(255, 133, 51, 0.1) 100%);
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        border: 1px solid rgba(255, 102, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: linear-gradient(135deg, rgba(255, 102, 0, 0.2) 0%, rgba(255, 133, 51, 0.2) 100%);
+        transform: translateY(-2px);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+        color: white !important;
+    }
+    
+    /* Cards with gradient borders */
+    div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] {
+        gap: 1rem;
+    }
+    
+    /* Info/Success/Warning boxes */
+    .stAlert {
+        border-radius: 12px;
+        border-left: 4px solid;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Divider - Eredivisie orange */
+    hr {
+        margin: 2rem 0;
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #FF6600, #FF8533, transparent);
+    }
+    
+    /* Multiselect selected items - #254D8D color */
+    [data-baseweb="tag"] {
+        background-color: #254D8D !important;
+        border-color: #1e3a6d !important;
+    }
+    
+    [data-baseweb="tag"] span {
+        color: white !important;
+    }
+    
+    /* Multiselect dropdown items */
+    [data-baseweb="popover"] [role="option"] {
+        color: #1f2937 !important;
+    }
+    
+    /* Age slider - handles mavi */
+    .stSlider [data-baseweb="slider"] [role="slider"] {
+        background-color: #254D8D !important;
+    }
+    
+    /* Info boxes - Orange theme */
+    .stAlert {
+        background-color: rgba(255, 102, 0, 0.1) !important;
+        border: 1px solid rgba(255, 102, 0, 0.3) !important;
+    }
+    
+    .stAlert [data-testid="stMarkdownContainer"] p {
+        color: #FF6600 !important;
+    }
+    
+    .stAlert [data-testid="stMarkdownContainer"] strong {
+        color: #FF6600 !important;
+    }
+    
+    /* Success boxes - Orange theme */
+    div[data-baseweb="notification"] {
+        background-color: rgba(255, 102, 0, 0.1) !important;
+        border-left-color: #FF6600 !important;
+    }
+    
+    div[data-baseweb="notification"] p {
+        color: #FF6600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -27,10 +217,10 @@ st.markdown("""
 # ---------------------------
 
 # Dosya yolu düzeltmesi - hem local hem de cloud için çalışır
-if os.path.exists('data/eredivisie_midfielders_clustered.csv'):
-    df = pd.read_csv('data/eredivisie_midfielders_clustered.csv')
-elif os.path.exists('notebooks/../data/eredivisie_midfielders_clustered.csv'):
-    df = pd.read_csv('notebooks/../data/eredivisie_midfielders_clustered.csv')
+if os.path.exists('data/eredivisie_midfielders_scored.csv'):
+    df = pd.read_csv('data/eredivisie_midfielders_scored.csv')
+elif os.path.exists('notebooks/../data/eredivisie_midfielders_scored.csv'):
+    df = pd.read_csv('notebooks/../data/eredivisie_midfielders_scored.csv')
 else:
     st.error("CSV file not found!")
     st.stop()
@@ -98,7 +288,7 @@ column_info = {
     "Cluster": "Player Cluster"
 }
 
-with st.expander(f"COLUMN DESCRIPTIONS", expanded=False):
+with st.expander("COLUMN DESCRIPTIONS (Click to expand)", expanded=False):
     for col, desc in column_info.items():
         st.markdown(f"**{col}**: {desc}", unsafe_allow_html=True)
 
@@ -181,59 +371,195 @@ Backbone players of the team. Leader-type, reliable names giving 100% performanc
 # ---------------------------
 # STEP 1: PAGE HEADER INFO
 # ---------------------------
-st.set_page_config(page_title="Player Analysis", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title=" Eredivisie U24 Midfielders Analytics", 
+    layout="wide", 
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': "# Eredivisie U24 Midfielders Analytics Dashboard\nProfessional scouting and player analysis tool powered by data science.\n Emin Eren Sağlam"
+    }
+)
 
-# Hero Section
+# Hero Section with Modern Gradient
 st.markdown("""
-    <div style='text-align: center; padding: 2.5rem 0; background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-        <h1 style='color: white; font-size: 2.8rem; margin: 0; font-weight: 600; letter-spacing: -0.5px;'>Eredivisie U24 Midfielders</h1>
-        <p style='color: #ECF0F1; font-size: 1.1rem; margin: 0.8rem 0 0 0; font-weight: 300;'>Professional Scouting Dashboard</p>
+    <div style='text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, #FF6600 0%, #FF8533 50%, #FFA500 100%); 
+                border-radius: 24px; margin-bottom: 3rem; box-shadow: 0 20px 60px rgba(255, 102, 0, 0.4);
+                position: relative; overflow: hidden;'>
+        <div style='position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                    background: url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                    opacity: 0.3;'></div>
+        <div style='position: relative; z-index: 1;'>
+            <h1 style='color: white; font-size: 3.5rem; margin: 0; font-weight: 800; 
+                       letter-spacing: -1px; text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                       background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                       background-clip: text;'>
+                 Eredivisie U24 Midfielders
+            </h1>
+            <p style='color: rgba(255,255,255,0.95); font-size: 1.3rem; margin: 1rem 0 0.5rem 0; 
+                      font-weight: 500; text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>
+                Professional Scouting & Analytics Dashboard
+            </p>
+            <p style='color: rgba(255,255,255,0.8); font-size: 1rem; margin: 0;'>
+                Advanced player analysis powered by data science
+            </p>
+            <p style='color: rgba(255,255,255,0.95); font-size: 1.3rem; margin: 1rem 0 0.5rem 0; 
+                      font-weight: 500; text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>
+                <a href='https://www.linkedin.com/in/erensglm' target='_blank' 
+                   style='color: rgba(255,255,255,0.95); text-decoration: none; 
+                          transition: opacity 0.3s ease;'>
+                    Created by Emin Eren Sağlam
+                </a>
+            </p>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
-# Quick Stats Cards
-col1, col2, col3, col4 = st.columns(4)
+# Project Overview & Scoring System - Side by Side Cards
+col_info1, col_info2 = st.columns(2, gap="large")
+
+with col_info1:
+    st.markdown("""
+        <div style='background: linear-gradient(135deg, rgba(255, 102, 0, 0.08) 0%, rgba(255, 133, 51, 0.08) 100%);
+                    border-radius: 16px; padding: 2rem; height: 100%;
+                    border: 2px solid rgba(255, 102, 0, 0.3);
+                    box-shadow: 0 8px 32px rgba(255, 102, 0, 0.15);'>
+            <div style='display: flex; align-items: center; margin-bottom: 1.5rem;'>
+                <h3 style='color: #FF6600; margin: 0; font-size: 1.4rem; font-weight: 700;'>
+                    About This Dashboard
+                </h3>
+            </div>
+            <p style='color: #254D8D; font-size: 1rem; line-height: 1.8; margin: 0;'>
+                This comprehensive analytics platform provides data-driven insights into <strong style='color: #FF6600;'>Eredivisie's most promising young midfielders</strong> (under 24). 
+                Using advanced clustering algorithms and statistical analysis, we identify three distinct player profiles to help scouts, 
+                analysts, and teams make informed decisions.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_info2:
+    st.markdown("""
+        <div style='background: linear-gradient(135deg, rgba(255, 102, 0, 0.08) 0%, rgba(255, 165, 0, 0.08) 100%);
+                    border-radius: 16px; padding: 2rem; height: 100%;
+                    border: 2px solid rgba(255, 102, 0, 0.3);
+                    box-shadow: 0 8px 32px rgba(255, 102, 0, 0.15);'>
+            <div style='display: flex; align-items: center; margin-bottom: 1.5rem;'>
+                <h3 style='color: #FF6600; margin: 0; font-size: 1.4rem; font-weight: 700;'>
+                    Scoring System
+                </h3>
+            </div>
+            <p style='color: #254D8D; font-size: 1rem; line-height: 1.8; margin: 0;'>
+                All performance metrics are scored on a <strong style='color: #FF6600;'>0-100 scale</strong>. 
+                A score of <strong style='color: #10b981;'>0</strong> represents the <em>lowest</em> performance, 
+                while <strong style='color: #4ade80;'>100</strong> represents the <em>highest</em>. 
+                For example, a player with 85 in passing demonstrates superior passing ability compared to others in the dataset.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<div style='margin: 2.5rem 0;'></div>", unsafe_allow_html=True)
+
+# Quick Stats Cards with Modern Gradients
+col1, col2, col3, col4 = st.columns(4, gap="large")
 with col1:
     st.markdown("""
-        <div style='background: #3498DB; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>48</h2>
-            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Total Players</p>
+        <div style='background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%); 
+                    padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                    box-shadow: 0 10px 40px rgba(255, 102, 0, 0.4);
+                    transition: transform 0.3s ease; position: relative; overflow: hidden;'>
+            <div style='position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; 
+                        background: rgba(255,255,255,0.1); border-radius: 50%;'></div>
+            <div style='position: relative; z-index: 1;'>
+                <h2 style='color: white; margin: 0; font-size: 2.8rem; font-weight: 800; 
+                           text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>48</h2>
+                <p style='color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; 
+                          font-weight: 600; letter-spacing: 0.5px;'>TOTAL PLAYERS</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 with col2:
     st.markdown("""
-        <div style='background: #9B59B6; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>3</h2>
-            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Player Profiles</p>
+        <div style='background: linear-gradient(135deg, #FFA500 0%, #FFB84D 100%); 
+                    padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                    box-shadow: 0 10px 40px rgba(255, 165, 0, 0.4);
+                    transition: transform 0.3s ease; position: relative; overflow: hidden;'>
+            <div style='position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; 
+                        background: rgba(255,255,255,0.1); border-radius: 50%;'></div>
+            <div style='position: relative; z-index: 1;'>
+                <h2 style='color: white; margin: 0; font-size: 2.8rem; font-weight: 800; 
+                           text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>3</h2>
+                <p style='color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; 
+                          font-weight: 600; letter-spacing: 0.5px;'>PLAYER PROFILES</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 with col3:
     st.markdown("""
-        <div style='background: #27AE60; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>18-24</h2>
-            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Age Range</p>
+        <div style='background: linear-gradient(135deg, #FF8533 0%, #FFA64D 100%); 
+                    padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                    box-shadow: 0 10px 40px rgba(255, 133, 51, 0.4);
+                    transition: transform 0.3s ease; position: relative; overflow: hidden;'>
+            <div style='position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; 
+                        background: rgba(255,255,255,0.1); border-radius: 50%;'></div>
+            <div style='position: relative; z-index: 1;'>
+                <h2 style='color: white; margin: 0; font-size: 2.8rem; font-weight: 800; 
+                           text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>18-24</h2>
+                <p style='color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; 
+                          font-weight: 600; letter-spacing: 0.5px;'>AGE RANGE</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 with col4:
     st.markdown("""
-        <div style='background: #E67E22; padding: 1.5rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
-            <h2 style='color: white; margin: 0; font-size: 2.2rem; font-weight: 600;'>18</h2>
-            <p style='color: #ECF0F1; margin: 0.5rem 0 0 0; font-size: 0.95rem; font-weight: 400;'>Teams</p>
+        <div style='background: linear-gradient(135deg, #FFB84D 0%, #FFC966 100%); 
+                    padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                    box-shadow: 0 10px 40px rgba(255, 184, 77, 0.4);
+                    transition: transform 0.3s ease; position: relative; overflow: hidden;'>
+            <div style='position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; 
+                        background: rgba(255,255,255,0.1); border-radius: 50%;'></div>
+            <div style='position: relative; z-index: 1;'>
+                <h2 style='color: white; margin: 0; font-size: 2.8rem; font-weight: 800; 
+                           text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>18</h2>
+                <p style='color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; 
+                          font-weight: 600; letter-spacing: 0.5px;'>TEAMS</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
 st.divider()
 
-# Player Profiles Section with better styling
-st.markdown("### Player Profile Types")
-st.caption("Understand the three distinct player profiles in our analysis")
+# Player Profiles Section with Modern Design
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h2 style='font-size: 2.5rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+             Player Profile Types
+        </h2>
+        <p style='color: #888; font-size: 1.1rem; margin: 0.5rem 0 0 0;'>
+            Understand the three distinct player profiles in our analysis
+        </p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Add custom CSS for Player Profile expanders - tighter spacing
+st.markdown("""
+    <style>
+        /* Reduce spacing for Player Profile expanders specifically */
+        .player-profiles-section [data-testid="stExpander"] {
+            margin: 0.5rem 0 !important;
+        }
+    </style>
+    <div class="player-profiles-section">
+""", unsafe_allow_html=True)
 
 for cid, prof in cluster_profiles.items():
     # Calculate real cluster data
     cluster_data = df[df['Cluster'] == cid]
     real_player_count = len(cluster_data)
     
-    with st.expander(f"**PLAYER PROFILE {cid}: {prof['name']}**"):
+    with st.expander(f"PLAYER PROFILE {cid}: {prof['name']} (Click to view details)"):
         st.markdown(prof['description'], unsafe_allow_html=True)
         
         # Dynamic statistics from real data
@@ -267,7 +593,7 @@ for cid, prof in cluster_profiles.items():
                     
             with col2:
                 st.markdown("**Performance Metrics**")
-                st.caption("*(According to Z-score normalization)*")
+                st.caption("*(According to the 100-point rating system)*")
                 st.metric(perf_label_1, f"{perf_metric_1:.2f}")
                 st.metric(perf_label_2, f"{perf_metric_2:.2f}")
                     
@@ -284,6 +610,9 @@ for cid, prof in cluster_profiles.items():
         if 'key_strengths' in prof['detailed_stats']:
             st.markdown(f"**Key Strengths**: {', '.join(prof['detailed_stats']['key_strengths'])}")
 
+# Close player profiles section div
+st.markdown("</div>", unsafe_allow_html=True)
+
 # ---------------------------
 # STEP 2: SIDEBAR FILTERS
 # ---------------------------
@@ -292,19 +621,20 @@ with st.sidebar:
     st.markdown("---")
     
     # Age Filter
-    st.markdown("### Age Range")
+    st.markdown("<h3 style='margin: 0; font-size: 1.2rem;'>Age Range</h3>", unsafe_allow_html=True)
     age_filter = st.slider(
         "Select age range", 
         int(df["Age"].min()), 
         int(df["Age"].max()), 
         (18, 24),
-        help="Filter players by age"
+        help="Filter players by age",
+        label_visibility="collapsed"
     )
     
     st.markdown("---")
     
     # Position Filter
-    st.markdown("### Position")
+    st.markdown("<h3 style='margin: 0; font-size: 1.2rem;'>Position</h3>", unsafe_allow_html=True)
     pos_filter = st.multiselect(
         "Select positions", 
         sorted(df["Pos"].unique()), 
@@ -315,7 +645,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Team Filter
-    st.markdown("### Team")
+    st.markdown("<h3 style='margin: 0; font-size: 1.2rem;'>Team</h3>", unsafe_allow_html=True)
     squad_filter = st.multiselect(
         "Select teams", 
         sorted(df["Squad"].unique()), 
@@ -326,7 +656,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Player Profile Filter
-    st.markdown("### Player Profile")
+    st.markdown("<h3 style='margin: 0; font-size: 1.2rem;'>Player Profile</h3>", unsafe_allow_html=True)
     cluster_filter = st.multiselect(
         "Select profiles", 
         sorted(df["Cluster"].unique()), 
@@ -338,7 +668,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Player Search
-    st.markdown("### Player Search")
+    st.markdown("<h3 style='margin: 0; font-size: 1.2rem;'>Player Search</h3>", unsafe_allow_html=True)
     player_search = st.text_input(
         "Enter player name", 
         placeholder="e.g. Kenneth Taylor",
@@ -360,19 +690,55 @@ df_filtered = df[
 if player_search:
     df_filtered = df_filtered[df_filtered["Player"].str.contains(player_search, case=False, na=False)]
 
-# Filtered Results Section
-st.markdown("## 📋 Filtered Players")
-col1, col2, col3 = st.columns([2, 1, 1])
+# Filtered Results Section with Modern Cards
+st.markdown("""
+    <div style='text-align: center; margin: 2rem 0 1rem 0;'>
+        <h2 style='font-size: 2rem; font-weight: 800;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+             Filtered Players
+        </h2>
+    </div>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3, gap="medium")
 with col1:
-    st.info(f"**{len(df_filtered)}** players match your filters")
+    st.markdown(f"""
+        <div style='background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                    padding: 1.5rem; border-radius: 16px; text-align: center;
+                    border: 2px solid rgba(255, 102, 0, 0.3);'>
+            <div style='font-size: 2.5rem; font-weight: 800; color: white;'>
+                {len(df_filtered)}
+            </div>
+            <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>Players Match</div>
+        </div>
+    """, unsafe_allow_html=True)
 with col2:
     if len(df_filtered) > 0:
-        st.success(f"Avg Age: **{df_filtered['Age'].mean():.1f}**")
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #FFA500 0%, #FFB84D 100%);
+                        padding: 1.5rem; border-radius: 16px; text-align: center;
+                        border: 2px solid rgba(255, 165, 0, 0.3);'>
+                <div style='font-size: 2.5rem; font-weight: 800; color: white;'>
+                    {df_filtered['Age'].mean():.1f}
+                </div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>Average Age</div>
+            </div>
+        """, unsafe_allow_html=True)
 with col3:
     if len(df_filtered) > 0:
-        st.success(f"Avg Minutes: **{df_filtered['std_Min'].mean():.0f}**")
+        st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #FF8533 0%, #FFA64D 100%);
+                        padding: 1.5rem; border-radius: 16px; text-align: center;
+                        border: 2px solid rgba(255, 133, 51, 0.3);'>
+                <div style='font-size: 2.5rem; font-weight: 800; color: white;'>
+                    {df_filtered['std_Min'].mean():.0f}
+                </div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>Average Minutes</div>
+            </div>
+        """, unsafe_allow_html=True)
 
-with st.expander("📊 View Detailed Player Data", expanded=False):
+with st.expander("View Detailed Player Data (Click to expand table)", expanded=False):
     st.dataframe(df_filtered, use_container_width=True, height=400)
 
 st.divider()
@@ -381,9 +747,19 @@ st.divider()
 # ---------------------------
 # STEP 4: TOP 5 PLAYERS BY PLAYER PROFILE
 # ---------------------------
-st.markdown("# 🏆 Top 5 Players by Player Profile")
-st.caption("Discover the best performers in each player profile category")
-st.markdown("")
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h1 style='font-size: 3rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+            Top 5 Players by Player Profile
+        </h1>
+        <p style='color: #888; font-size: 1.2rem; margin: 0.5rem 0 0 0;'>
+            Discover the best performers in each player profile category
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Metric sets suitable for cluster profiles (New 3 Clusters)
 cluster_metrics_map = {
@@ -396,11 +772,32 @@ cluster_metrics_map = {
 df_rank = df_filtered.copy()
 
 for cid, metrics in cluster_metrics_map.items():
-    # Profile card with color coding
-    profile_colors = {0: '#F97316', 1: '#EC4899', 2: '#06B6D4'}
+    # Modern Profile Cards with Gradients
+    profile_gradients = {
+        0: 'linear-gradient(135deg, #FF6600 0%, #FF8533 100%)',
+        1: 'linear-gradient(135deg, #FFA500 0%, #FFB84D 100%)',
+        2: 'linear-gradient(135deg, #FF8533 0%, #FFA64D 100%)'
+    }
+    profile_icons = {0: '', 1: '', 2: ''}
+    
     st.markdown(f"""
-        <div style='background: {profile_colors[cid]}; padding: 1rem; border-radius: 10px; margin: 1rem 0;'>
-            <h3 style='color: white; margin: 0;'>Profile {cid}: {cluster_profiles[cid]['name']}</h3>
+        <div style='background: {profile_gradients[cid]}; 
+                    padding: 2rem 1.5rem; border-radius: 20px; margin: 2rem 0;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                    position: relative; overflow: hidden;'>
+            <div style='position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; 
+                        background: rgba(255,255,255,0.1); border-radius: 50%;'></div>
+            <div style='position: relative; z-index: 1;'>
+                <div style='display: flex; align-items: center; gap: 1rem;'>
+                    <div style='font-size: 3rem;'>{profile_icons[cid]}</div>
+                    <div>
+                        <h2 style='color: white; margin: 0; font-size: 2rem; font-weight: 800; 
+                                   text-shadow: 0 2px 10px rgba(0,0,0,0.2);'>
+                            Profile {cid}: {cluster_profiles[cid]['name']}
+                        </h2>
+                    </div>
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -409,7 +806,7 @@ for cid, metrics in cluster_metrics_map.items():
     
     # Show individual standout features of top 5 players
     if len(cluster_data) > 0:
-        with st.expander(f"✨ Outstanding Features of Top 5 Players", expanded=True):
+        with st.expander(f"Outstanding Features of Top 5 Players (Click to collapse)", expanded=True):
             # Determine best players by cluster directly from CSV
             if cid == 0:  # Elite Creative Attack
                 # Highest goal+assist combination
@@ -520,7 +917,7 @@ for cid, metrics in cluster_metrics_map.items():
     show_cols = ["Player","Age","Pos","Squad",f"Cluster{cid}_Score"] + available_metrics
     renamed_cols = {col: column_info.get(col, col) for col in show_cols}
 
-    st.markdown("**📊 Top 5 Rankings:**")
+    st.markdown("**Top 5 Rankings:**")
     st.dataframe(
         top_players[show_cols].rename(columns=renamed_cols),
         use_container_width=True,
@@ -531,11 +928,22 @@ for cid, metrics in cluster_metrics_map.items():
 # ---------------------------
 # STEP 3: RADAR + SIMILAR PLAYERS + PLAYER PROFILE
 # ---------------------------
-st.markdown("# 🎯 Player Analysis & Comparison")
-st.caption("Deep dive into individual player performance with radar charts and similarity analysis")
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h1 style='font-size: 3rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+            Player Analysis & Comparison
+        </h1>
+        <p style='color: #888; font-size: 1.2rem; margin: 0.5rem 0 0 0;'>
+            Deep dive into individual player performance with radar charts and similarity analysis
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Instructions box
-with st.expander("ℹ️ How to use this section", expanded=False):
+with st.expander("How to use this section (Click to expand)", expanded=False):
     st.markdown("""
     **Steps:**
     1. Select one or more players from the dropdown below
@@ -555,7 +963,7 @@ st.markdown("---")
 # Initial radar metrics
 radar_metrics = ['std_MP','std_Min','std_90s','std_Gls','std_Ast','std_xG','std_xAG','misc_Fls','std_CrdY','std_CrdR']
 
-st.markdown("### 👤 Select Players for Analysis")
+st.markdown("<h3 style='margin: 0 0 1rem 0; font-size: 1.3rem;'>Select Players for Analysis</h3>", unsafe_allow_html=True)
 player_select = st.multiselect(
     "Choose one or more players", 
     df_filtered["Player"].unique(), 
@@ -585,7 +993,7 @@ def update_player_view(selected_players):
         st.caption(cluster_profiles[cluster_id]['description'])
 
     # ---------------------------
-    # 1️⃣ Multi-Player vs Cluster Radar
+    # Multi-Player vs Cluster Radar
     # ---------------------------
     scaler = MinMaxScaler()
     df_scaled = pd.DataFrame(scaler.fit_transform(df_filtered[radar_metrics]), columns=radar_metrics, index=df_filtered.index)
@@ -616,7 +1024,8 @@ def update_player_view(selected_players):
             ))
     
     # Add player profile averages
-    cluster_colors = ['#F97316', '#EC4899', '#06B6D4']  # For 3 player profiles: Orange, Pink, Turquoise
+    # Chart renkler - birbirinden ayırt edilebilir
+    cluster_colors = ['#1E88E5', '#43A047', '#FB8C00']  # Profile 0: Mavi, Profile 1: Yeşil, Profile 2: Turuncu
     for idx, cluster_id in enumerate(unique_clusters):
         cluster_mean_scaled = df_scaled[df_filtered["Cluster"] == cluster_id].mean()
         cluster_color = cluster_colors[cluster_id % len(cluster_colors)]
@@ -645,7 +1054,7 @@ def update_player_view(selected_players):
     st.plotly_chart(fig_radar, use_container_width=True)
 
     # ---------------------------
-    # 2️⃣ Category-Based Radars
+    # Category-Based Radars
     # ---------------------------
     categories = {
         "Playing Time / Participation": ['std_MP','std_Min','std_90s','pt_Min%','pt_Mn/MP'],
@@ -723,9 +1132,17 @@ def update_player_view(selected_players):
         
 
     # ---------------------------
-    # 3️⃣ Similar Players
+    # Similar Players
     # ---------------------------
-    st.markdown("## Similar Players")
+    st.markdown("""
+        <div style='margin: 3rem 0 1.5rem 0;'>
+            <h2 style='font-size: 2rem; font-weight: 800;
+                       background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+                Similar Players
+            </h2>
+        </div>
+    """, unsafe_allow_html=True)
     
     # Find similar players for each selected player
     for player_name in selected_players:
@@ -741,14 +1158,23 @@ def update_player_view(selected_players):
             st.dataframe(similar_players[["Player","Pos","Squad","Age","Cluster"] + radar_metrics])
 
     # ---------------------------
-    # 4️⃣ Compare All Player Profiles
+    # Compare All Player Profiles
     # ---------------------------
-    st.markdown("## Compare All Player Profiles")
+    st.markdown("""
+        <div style='margin: 3rem 0 1.5rem 0;'>
+            <h2 style='font-size: 2rem; font-weight: 800;
+                       background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+                Compare All Player Profiles
+            </h2>
+        </div>
+    """, unsafe_allow_html=True)
     df_scaled_all = pd.DataFrame(MinMaxScaler().fit_transform(df_filtered[radar_metrics]),
                                  columns=radar_metrics, index=df_filtered.index)
     cluster_means_scaled = df_scaled_all.groupby(df_filtered["Cluster"]).mean()
     fig_all = go.Figure()
-    colors = ['#F97316','#EC4899','#06B6D4']  # For 3 player profiles: Orange, Pink, Turquoise
+    # Chart renkler - birbirinden ayırt edilebilir
+    colors = ['#1E88E5', '#43A047', '#FB8C00']  # Profile 0: Mavi, Profile 1: Yeşil, Profile 2: Turuncu
     for idx, (cid,row) in enumerate(cluster_means_scaled.iterrows()):
         # Create closed polygon by adding first value to the end
         r_all_values = list(row.values) + [row.values[0]]
@@ -771,9 +1197,17 @@ def update_player_view(selected_players):
     st.plotly_chart(fig_all, use_container_width=True, key="all_clusters_radar")
 
     # ---------------------------
-    # 5️⃣ PDF / Excel Report
+    # PDF / Excel Report
     # ---------------------------
-    st.markdown("## Download Report")
+    st.markdown("""
+        <div style='margin: 3rem 0 1.5rem 0;'>
+            <h2 style='font-size: 2rem; font-weight: 800;
+                       background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+                Download Report
+            </h2>
+        </div>
+    """, unsafe_allow_html=True)
     
     if len(selected_players) == 1:
         # Current format for single player
@@ -841,10 +1275,21 @@ update_player_view(player_select)
 # ---------------------------
 # STEP 6: SCATTER PLOT ANALYSES
 # ---------------------------
-st.markdown("# 📈 Advanced Scatter Plot Analyses")
-st.caption("Explore correlations and relationships between different player metrics")
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h1 style='font-size: 3rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+            Advanced Scatter Plot Analyses
+        </h1>
+        <p style='color: #888; font-size: 1.2rem; margin: 0.5rem 0 0 0;'>
+            Explore correlations and relationships between different player metrics
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
-with st.expander("ℹ️ Understanding Scatter Plots", expanded=False):
+with st.expander("Understanding Scatter Plots (Click to expand)", expanded=False):
     st.markdown("""
     **What are scatter plots?**
     - Each point represents one player
@@ -861,10 +1306,10 @@ st.markdown("---")
 
 # Create tabs for different scatter plot analyses
 tab1, tab2, tab3, tab4 = st.tabs([
-    "📊 Age vs Performance", 
-    "⏱️ Minutes vs Effectiveness",
-    "🎯 Passing vs Creativity", 
-    "⚔️ Defense vs Attack"
+    "Age vs Performance", 
+    "Minutes vs Effectiveness",
+    "Passing vs Creativity", 
+    "Defense vs Attack"
 ])
 
 with tab1:
@@ -874,8 +1319,8 @@ with tab1:
     # Age vs Performance Scatter Plot
     fig_age = go.Figure()
     
-    # Color by player profile
-    cluster_colors_scatter = {0: '#F97316', 1: '#EC4899', 2: '#06B6D4'}
+    # Color by player profile - chart renkler
+    cluster_colors_scatter = {0: '#1E88E5', 1: '#43A047', 2: '#FB8C00'}  # Mavi, Yeşil, Turuncu
     cluster_names = {0: 'Elite Creative', 1: 'Developing', 2: 'Defensive Engines'}
     
     for cluster_id in df_filtered['Cluster'].unique():
@@ -1092,8 +1537,18 @@ with tab4:
 st.divider()
 
 # Summary insights section
-st.markdown("## 💡 Key Insights from Scatter Analysis")
-st.caption("Statistical correlations and standout performers")
+st.markdown("""
+    <div style='margin: 3rem 0 2rem 0;'>
+        <h2 style='font-size: 2.2rem; font-weight: 800; text-align: center;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            Key Insights from Scatter Analysis
+        </h2>
+        <p style='text-align: center; color: #888; font-size: 1rem; margin-top: 0.5rem;'>
+            Statistical correlations and standout performers
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 insights_col1, insights_col2 = st.columns(2)
 
@@ -1148,10 +1603,21 @@ with insights_col2:
 # ---------------------------
 # STEP 7: LINE CHART/TREND ANALYSES
 # ---------------------------
-st.markdown("# 📉 Trend & Line Chart Analyses")
-st.caption("Discover performance trends across different dimensions")
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h1 style='font-size: 3rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+            Trend & Line Chart Analyses
+        </h1>
+        <p style='color: #888; font-size: 1.2rem; margin: 0.5rem 0 0 0;'>
+            Discover performance trends across different dimensions
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
-with st.expander("ℹ️ How to read trend charts", expanded=False):
+with st.expander("How to read trend charts (Click to expand)", expanded=False):
     st.markdown("""
     **Understanding trends:**
     - Line charts show average performance at different levels
@@ -1168,9 +1634,9 @@ st.markdown("---")
 
 # Create tabs for different trend analyses
 trend_tab1, trend_tab2, trend_tab3= st.tabs([
-    "👤 Age Trends", 
-    "⏱️ Playing Time Trends",
-    "🏆 Team Performance Trends", 
+    "Age Trends", 
+    "Playing Time Trends",
+    "Team Performance Trends", 
 ])
 
 with trend_tab1:
@@ -1467,7 +1933,15 @@ with trend_tab3:
 
 
 # Trend Summary Section
-st.markdown("## Key Trend Insights")
+st.markdown("""
+    <div style='margin: 3rem 0 2rem 0;'>
+        <h2 style='font-size: 2.2rem; font-weight: 800; text-align: center;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            Key Trend Insights
+        </h2>
+    </div>
+""", unsafe_allow_html=True)
 
 trend_insights_col1, trend_insights_col2 = st.columns(2)
 
@@ -1483,18 +1957,18 @@ with trend_insights_col1:
         st.write(f"• **Age-Defense Correlation**: {age_def_corr:.3f}")
         
         if age_goal_corr > 0.1:
-            st.success("📈 Older players tend to score more")
+            st.success("Older players tend to score more")
         elif age_goal_corr < -0.1:
-            st.info("📉 Younger players are more prolific")
+            st.info("Younger players are more prolific")
         else:
-            st.info("➡️ Age has minimal impact on scoring")
+            st.info("Age has minimal impact on scoring")
             
         if age_def_corr > 0.1:
-            st.success("🛡️ Older players are more defensive")
+            st.success("Older players are more defensive")
         elif age_def_corr < -0.1:
-            st.info("⚡ Younger players defend more actively")
+            st.info("Younger players defend more actively")
         else:
-            st.info("🔄 Age doesn't affect defensive work")
+            st.info("Age doesn't affect defensive work")
 
 with trend_insights_col2:
     st.markdown("### Peak Performance Insights")
@@ -1526,10 +2000,21 @@ with trend_insights_col2:
 # ---------------------------
 # STEP 8: HISTOGRAM ANALYSES
 # ---------------------------
-st.markdown("# 📊 Distribution Analysis (Histograms)")
-st.caption("Understand how player metrics are distributed across the dataset")
+st.markdown("""
+    <div style='text-align: center; margin: 3rem 0 2rem 0;'>
+        <h1 style='font-size: 3rem; font-weight: 800; margin: 0;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text;'>
+            Distribution Analysis (Histograms)
+        </h1>
+        <p style='color: #888; font-size: 1.2rem; margin: 0.5rem 0 0 0;'>
+            Understand how player metrics are distributed across the dataset
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
-with st.expander("ℹ️ Reading histograms", expanded=False):
+with st.expander("Reading histograms (Click to expand)", expanded=False):
     st.markdown("""
     **What do histograms show?**
     - Height of bars indicates number of players in each range
@@ -1546,10 +2031,10 @@ st.markdown("---")
 
 # Create tabs for different histogram categories
 hist_tab1, hist_tab2, hist_tab3, hist_tab4 = st.tabs([
-    "⚽ Performance Metrics",
-    "⏱️ Playing Time",
-    "🎯 Technical Skills",
-    "💪 Physical & Discipline"
+    "Performance Metrics",
+    "Playing Time",
+    "Technical Skills",
+    "Physical & Discipline"
 ])
 
 with hist_tab1:
@@ -1561,13 +2046,17 @@ with hist_tab1:
         # Goals histogram
         fig_goals_hist = go.Figure()
         
+        # Chart renkler
+        hist_colors = {0: '#1E88E5', 1: '#43A047', 2: '#FB8C00'}
+        
         for cluster_id in sorted(df_filtered['Cluster'].unique()):
             cluster_data = df_filtered[df_filtered['Cluster'] == cluster_id]
             fig_goals_hist.add_trace(go.Histogram(
                 x=cluster_data['std_Gls'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_goals_hist.update_layout(
@@ -1595,7 +2084,8 @@ with hist_tab1:
                 x=cluster_data['std_Ast'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_assists_hist.update_layout(
@@ -1627,7 +2117,8 @@ with hist_tab1:
             x=cluster_data['G+A'],
             name=f'Cluster {cluster_id}',
             opacity=0.7,
-            nbinsx=20
+            nbinsx=20,
+            marker_color=hist_colors.get(cluster_id, '#1E88E5')
         ))
     
     fig_ga_hist.update_layout(
@@ -1656,7 +2147,8 @@ with hist_tab2:
                 x=cluster_data['std_Min'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_minutes_hist.update_layout(
@@ -1683,7 +2175,8 @@ with hist_tab2:
                 x=cluster_data['std_MP'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_matches_hist.update_layout(
@@ -1711,7 +2204,8 @@ with hist_tab2:
             x=cluster_data['Age'],
             name=f'Cluster {cluster_id}',
             opacity=0.7,
-            nbinsx=10
+            nbinsx=10,
+            marker_color=hist_colors.get(cluster_id, '#1E88E5')
         ))
     
     fig_age_hist.update_layout(
@@ -1766,7 +2260,8 @@ with hist_tab3:
                 x=cluster_data['pass_KP'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_kp_hist.update_layout(
@@ -1796,7 +2291,8 @@ with hist_tab3:
                 x=cluster_data['pass_PrgP'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_prog_pass.update_layout(
@@ -1819,7 +2315,8 @@ with hist_tab3:
                 x=cluster_data['poss_PrgC'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_prog_carry.update_layout(
@@ -1848,7 +2345,8 @@ with hist_tab4:
                 x=cluster_data['def_Tkl'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_tackles_hist.update_layout(
@@ -1874,7 +2372,8 @@ with hist_tab4:
                 x=cluster_data['def_Int'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_int_hist.update_layout(
@@ -1901,7 +2400,8 @@ with hist_tab4:
             x=cluster_data['misc_Recov'],
             name=f'Cluster {cluster_id}',
             opacity=0.7,
-            nbinsx=20
+            nbinsx=20,
+            marker_color=hist_colors.get(cluster_id, '#1E88E5')
         ))
     
     fig_recov_hist.update_layout(
@@ -1952,7 +2452,8 @@ with hist_tab4:
                 x=cluster_data['misc_Fls'],
                 name=f'Profile {cluster_id}',
                 opacity=0.7,
-                nbinsx=15
+                nbinsx=15,
+                marker_color=hist_colors.get(cluster_id, '#1E88E5')
             ))
         
         fig_fouls_hist.update_layout(
@@ -1969,8 +2470,18 @@ with hist_tab4:
 st.divider()
 
 # Distribution Summary
-st.markdown("## 💡 Distribution Insights")
-st.caption("Key findings from distribution analysis")
+st.markdown("""
+    <div style='margin: 3rem 0 2rem 0;'>
+        <h2 style='font-size: 2.2rem; font-weight: 800; text-align: center;
+                   background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            Distribution Insights
+        </h2>
+        <p style='text-align: center; color: #888; font-size: 1rem; margin-top: 0.5rem;'>
+            Key findings from distribution analysis
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 insights_col1, insights_col2, insights_col3 = st.columns(3)
 
@@ -1981,17 +2492,17 @@ with insights_col1:
         # Most prolific scorer
         top_scorer = df_filtered.nlargest(1, 'std_Gls')
         if not top_scorer.empty:
-            st.write(f"🥇 **Top Scorer**: {top_scorer.iloc[0]['Player']} ({top_scorer.iloc[0]['std_Gls']:.2f} goals/game)")
+            st.write(f"**Top Scorer**: {top_scorer.iloc[0]['Player']} ({top_scorer.iloc[0]['std_Gls']:.2f} goals/game)")
         
         # Most creative
         top_assists = df_filtered.nlargest(1, 'std_Ast')
         if not top_assists.empty:
-            st.write(f"🎯 **Top Assister**: {top_assists.iloc[0]['Player']} ({top_assists.iloc[0]['std_Ast']:.2f} assists/game)")
+            st.write(f"**Top Assister**: {top_assists.iloc[0]['Player']} ({top_assists.iloc[0]['std_Ast']:.2f} assists/game)")
         
         # Most minutes
         most_minutes = df_filtered.nlargest(1, 'std_Min')
         if not most_minutes.empty:
-            st.write(f"⏱️ **Most Minutes**: {most_minutes.iloc[0]['Player']} ({most_minutes.iloc[0]['std_Min']:.0f} min)")
+            st.write(f"**Most Minutes**: {most_minutes.iloc[0]['Player']} ({most_minutes.iloc[0]['std_Min']:.0f} min)")
 
 with insights_col2:
     st.markdown("### Distribution Stats")
@@ -1999,15 +2510,15 @@ with insights_col2:
     if not df_filtered.empty:
         # Goals standard deviation
         goals_std = df_filtered['std_Gls'].std()
-        st.write(f"📊 **Goals Variation**: σ = {goals_std:.3f}")
+        st.write(f"**Goals Variation**: σ = {goals_std:.3f}")
         
         # Pass accuracy range
         pass_range = df_filtered['pass_Cmp%'].max() - df_filtered['pass_Cmp%'].min()
-        st.write(f"🎯 **Pass Accuracy Range**: {pass_range*100:.1f}%")
+        st.write(f"**Pass Accuracy Range**: {pass_range*100:.1f}%")
         
         # Age diversity
         age_range = df_filtered['Age'].max() - df_filtered['Age'].min()
-        st.write(f"👥 **Age Range**: {age_range:.0f} years")
+        st.write(f"**Age Range**: {age_range:.0f} years")
 
 with insights_col3:
     st.markdown("### Player Profile Characteristics")
@@ -2022,13 +2533,54 @@ with insights_col3:
 
 st.divider()
 
-# Footer
+# Modern Footer with Gradient
 st.markdown("""
-    <div style='text-align: center; padding: 2.5rem 0; background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%); border-radius: 8px; margin-top: 2rem;'>
-        <p style='margin: 0; color: white; font-size: 1.1rem; font-weight: 600;'>Eredivisie U24 Midfielders Scouting Dashboard</p>
-        <p style='margin: 0.8rem 0 0 0; font-size: 0.95rem; color: #BDC3C7;'>Professional player analysis and comparison tool</p>
-        <p style='margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #95A5A6;'>Data-driven insights for scouts and analysts</p>
+    <div style='text-align: center; padding: 4rem 2rem; 
+                background: linear-gradient(135deg, #FF6600 0%, #FF8533 50%, #FFA500 100%); 
+                border-radius: 24px; margin-top: 4rem;
+                box-shadow: 0 20px 60px rgba(255, 102, 0, 0.4);
+                position: relative; overflow: hidden;'>
+        <div style='position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                    background: url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                    opacity: 0.2;'></div>
+        <div style='position: relative; z-index: 1;'>
+            <div style='font-size: 3rem; margin-bottom: 1rem;'></div>
+            <h2 style='margin: 0; color: white; font-size: 2rem; font-weight: 800; 
+                       text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                       background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                       background-clip: text;'>
+                Eredivisie U24 Midfielders Scouting Dashboard
+            </h2>
+            <p style='margin: 1rem 0 0.5rem 0; font-size: 1.1rem; color: rgba(255,255,255,0.95); font-weight: 500;'>
+                Professional player analysis and comparison tool
+            </p>
+            <p style='margin: 0; font-size: 1rem; color: rgba(255,255,255,0.8);'>
+                Data-driven insights for scouts and analysts
+            </p>
+            <div style='margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2);'>
+                <p style='margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.7);'>
+                    Powered by Advanced Analytics & Machine Learning
+                </p>
+            </div>
+                <p style='margin: 1rem 0 0.5rem 0; font-size: 1.1rem; color: rgba(255,255,255,0.95); font-weight: 500;'>
+                    Emin Eren Sağlam
+                </p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Created by section - Sol alt
+st.markdown("""
+    <div style='text-align: left; margin-top: 2rem; padding: 1rem 0;'>
+        <p style='font-size: 0.9rem; color: #888; margin: 0;'>
+            Created by <a href='https://www.linkedin.com/in/erensglm' target='_blank' 
+            style='color: #254D8D; text-decoration: none; font-weight: 600;
+                   transition: color 0.3s ease;'>
+            Emin Eren Sağlam</a>
+        </p>
     </div>
 """, unsafe_allow_html=True)
 
 #streamlit run streamlit_app.py
+
