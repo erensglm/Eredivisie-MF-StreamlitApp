@@ -1,0 +1,335 @@
+================================================================================
+EREDIVISIE ORTA SAHA ARCHETYPELERİ - METODOLOJİ VE AÇIKLAMA
+================================================================================
+
+TARİH: Ekim 2025
+TOPLAM OYUNCU: 50
+ARCHETYPE SAYISI: 8
+
+================================================================================
+1. GENEL METODOLOJİ
+================================================================================
+
+PERCENTILE TABANLI SKORLAMA SİSTEMİ:
+------------------------------------
+Her oyuncu metrigi için 0-100 arası percentile değeri hesaplanır.
+- 0: En düşük değere sahip oyuncu
+- 100: En yüksek değere sahip oyuncu
+- 50: Medyan değer
+
+Her archetype için önemli metrikler belirlenir ve ağırlıklandırılır.
+Toplam ağırlık = 100% (1.0)
+
+Oyuncu her 8 archetype için skor alır, en yüksek skoru veren archetype atanır.
+
+================================================================================
+2. ARCHETYPE TANIMLARI VE HESAPLAMA FORMÜLLERİ
+================================================================================
+
+------------------------------------------------------------------------------
+ARCHETYPE 1: ANCHOR (Çapa Orta Saha)
+------------------------------------------------------------------------------
+TANIM:
+Defansif üçlünün önünde oynayan, takımın defansif dengesini sağlayan oyuncu.
+Fiziksel, topu kazanan, basit paslar yapan, riski sevmeyen oyuncu tipi.
+
+KARAKTERİSTİKLER:
+- Defansif bölgede pozisyon alır (def_Def 3rd yüksek)
+- Yüksek top kapma (def_Tkl+Int)
+- Yüksek top kurtarma (misc_Recov)
+- Düşük hücum bölgesinde aktivite (def_Att 3rd düşük)
+- Blok yapma (def_Blocks)
+
+HESAPLAMA FORMÜLÜ:
+Score = def_Tkl+Int × 0.25        (25% ağırlık - topu kazanma)
+      + def_Def 3rd × 0.20         (20% ağırlık - defansif pozisyon)
+      + misc_Recov × 0.15          (15% ağırlık - top kurtarma)
+      + def_Blocks × 0.15          (15% ağırlık - blok yapma)
+      + def_TklW × 0.15            (15% ağırlık - kazanılan tacklelar)
+      + (100 - def_Att 3rd) × 0.10 (10% ağırlık - hücumda olmama)
+
+ÖRNEK OYUNCULAR:
+- Max Balard (NAC Breda) - Score: 90.3
+- Amine Lachkar (Willem II) - Score: 78.2
+- Alonzo Engwanda (Utrecht) - Score: 61.8
+
+------------------------------------------------------------------------------
+ARCHETYPE 2: DEEP LYING PLAYMAKER (DLP - Geride Oyun Kuran)
+------------------------------------------------------------------------------
+TANIM:
+Defansif bölgeden oyunu başlatan, uzun paslarla hücumu kuran, teknik oyuncu.
+Yüksek pas başarısı, görüş açısı geniş, progressive paslar yapan tip.
+
+KARAKTERİSTİKLER:
+- Çok yüksek pas başarı oranı (pass_Cmp% yüksek)
+- Uzun progressive mesafeler (pass_PrgDist)
+- Progressive paslar (pass_PrgP)
+- Switch paslar (passt_Sw)
+- Geride oynar (def_Def 3rd)
+
+HESAPLAMA FORMÜLÜ:
+Score = pass_Cmp% × 0.20           (20% ağırlık - pas başarısı)
+      + pass_PrgDist × 0.20        (20% ağırlık - progressive mesafe)
+      + pass_PrgP × 0.20           (20% ağırlık - progressive pas sayısı)
+      + passt_Sw × 0.15            (15% ağırlık - switch paslar)
+      + def_Def 3rd × 0.10         (10% ağırlık - defansif pozisyon)
+      + pass_1/3 × 0.15            (15% ağırlık - final 3'e paslar)
+
+ÖRNEK OYUNCULAR:
+- Anouar El Azzouzi (Zwolle) - Score: 96.2
+- Ringo Meerveld (Willem II) - Score: 83.6
+- Dirk Proper (NEC Nijmegen) - Score: 81.7
+
+------------------------------------------------------------------------------
+ARCHETYPE 3: BALL WINNER (Top Avcısı)
+------------------------------------------------------------------------------
+TANIM:
+Agresif, fiziksel, topu kazanmaya odaklanmış orta saha oyuncusu.
+Teknik özellikleri ikinci planda, intensity ve fiziksel oyun önde.
+
+KARAKTERİSTİKLER:
+- Çok yüksek tackle sayısı (def_Tkl+Int)
+- Kazanılan tacklelar (def_TklW)
+- Top kurtarmalar (misc_Recov)
+- Agresif oyun (misc_Fls - faul sayısı)
+- Müdahaleler (def_Int)
+
+HESAPLAMA FORMÜLÜ:
+Score = def_Tkl+Int × 0.30         (30% ağırlık - toplam top kapma)
+      + def_TklW × 0.20            (20% ağırlık - kazanılan tacklelar)
+      + misc_Recov × 0.20          (20% ağırlık - top kurtarma)
+      + misc_Fls × 0.15            (15% ağırlık - agresiflik)
+      + def_Int × 0.15             (15% ağırlık - müdahale)
+
+ÖRNEK OYUNCULAR:
+- Enric Llansana (Go Ahead Eagles) - Score: 97.4
+- Anouar El Azzouzi (Zwolle) - Score: 96.9
+- Paxten Aaronson (Utrecht) - Score: 95.7
+
+------------------------------------------------------------------------------
+ARCHETYPE 4: BOX-TO-BOX (Kutuptan Kutupa)
+------------------------------------------------------------------------------
+TANIM:
+Her iki ceza sahasında da etkili olan, yüksek kondisyon, dengeli oyuncu.
+Hem savunmaya hem hücuma katkı, sürekli hareket halinde.
+
+KARAKTERİSTİKLER:
+- Progressive runs/actions (std_PrgR)
+- Top taşıma mesafesi (poss_PrgDist)
+- Orta alanda oynar (def_Mid 3rd)
+- Defansa katkı (def_Tkl+Int)
+- Rakip alana girer (poss_1/3)
+- Top kurtarma (misc_Recov)
+
+HESAPLAMA FORMÜLÜ:
+Score = std_PrgR × 0.25            (25% ağırlık - progressive runs)
+      + misc_Recov × 0.15          (15% ağırlık - top kurtarma)
+      + poss_PrgDist × 0.15        (15% ağırlık - taşıma mesafesi)
+      + def_Mid 3rd × 0.15         (15% ağırlık - orta alan aktivitesi)
+      + def_Tkl+Int × 0.10         (10% ağırlık - defansif katkı)
+      + poss_1/3 × 0.10            (10% ağırlık - hücuma katılım)
+      + pass_PrgP × 0.10           (10% ağırlık - progressive paslar)
+
+ÖRNEK OYUNCULAR:
+- Malik Tillman (PSV Eindhoven) - Score: 86.9
+- Paxten Aaronson (Utrecht) - Score: 83.5
+- Anouar El Azzouzi (Zwolle) - Score: 82.8
+
+------------------------------------------------------------------------------
+ARCHETYPE 5: MEZZALA (Yan Koridor Oyuncusu)
+------------------------------------------------------------------------------
+TANIM:
+Merkez orta sahadan başlayıp yan koridorlara açılan, topla ilerlemeyi seven,
+carry odaklı, dinamik oyuncu. Daha çok hücuma yönelik ama defansa da katkı var.
+
+KARAKTERİSTİKLER:
+- Çok fazla top taşır (poss_Carries)
+- Progressive carries (poss_PrgC)
+- Top taşıma mesafesi (poss_PrgDist)
+- Progressive actions (std_PrgR)
+- Orta düzey defans (def_Tkl+Int)
+
+HESAPLAMA FORMÜLÜ:
+Score = poss_Carries × 0.25        (25% ağırlık - top taşıma sayısı)
+      + poss_PrgC × 0.25           (25% ağırlık - progressive carries)
+      + poss_PrgDist × 0.20        (20% ağırlık - taşıma mesafesi)
+      + std_PrgR × 0.15            (15% ağırlık - progressive runs)
+      + def_Tkl+Int × 0.15         (15% ağırlık - defansif denge)
+
+ÖRNEK OYUNCULAR:
+- Kenneth Taylor (Ajax) - Score: 87.9
+- Leo Sauer (NAC Breda) - Score: 86.6
+- Anouar El Azzouzi (Zwolle) - Score: 84.0
+
+------------------------------------------------------------------------------
+ARCHETYPE 6: ADVANCED PLAYMAKER (APM - İleri Oyun Kurucu)
+------------------------------------------------------------------------------
+TANIM:
+Rakip yarı sahasında oyunu yönlendiren, yaratıcı paslar yapan, asist üreten
+10 numaraya yakın ama daha geride oynayan oyuncu tipi.
+
+KARAKTERİSTİKLER:
+- Key paslar (pass_KP)
+- Expected assists (std_xAG)
+- Goal-creating actions paslardan (gca_PassLive)
+- Penalty area'ya paslar (pass_PPA)
+- Final üçte birliğe paslar (pass_1/3)
+- Asistler (std_Ast)
+
+HESAPLAMA FORMÜLÜ:
+Score = pass_KP × 0.25             (25% ağırlık - key paslar)
+      + std_xAG × 0.20             (20% ağırlık - expected assists)
+      + gca_PassLive × 0.20        (20% ağırlık - gol yaratan paslar)
+      + pass_PPA × 0.15            (15% ağırlık - ceza alanı pasları)
+      + pass_1/3 × 0.10            (10% ağırlık - final üçlü paslar)
+      + std_Ast × 0.10             (10% ağırlık - asistler)
+
+ÖRNEK OYUNCULAR:
+- Luciano Valente (Groningen) - Score: 95.7
+- Levi Smans (Heerenveen) - Score: 89.3
+- Kenneth Taylor (Ajax) - Score: 88.5
+
+------------------------------------------------------------------------------
+ARCHETYPE 7: CAM (Attacking Midfielder - Hücum Orta Sahası)
+------------------------------------------------------------------------------
+TANIM:
+En ileri orta saha oyuncusu, forvete yakın oynayan, her türlü hücum katkısı
+veren oyuncu. 10 numara, klasik playmaker pozisyonu.
+
+KARAKTERİSTİKLER:
+- Final üçte birlikte oynar (poss_1/3)
+- Ceza alanına girer (poss_CPA)
+- Goal-creating actions (tüm türler)
+- Expected assists (std_xAG)
+- Penalty area'ya paslar (pass_PPA)
+- Defanstan uzak (düşük def_Def 3rd)
+
+HESAPLAMA FORMÜLÜ:
+Score = poss_1/3 × 0.20                           (20% ağırlık - final üçlüde)
+      + poss_CPA × 0.20                           (20% ağırlık - ceza alanında)
+      + (gca_PassLive + gca_TO + gca_Sh)/3 × 0.25 (25% ağırlık - gol yaratma)
+      + std_xAG × 0.15                            (15% ağırlık - expected assists)
+      + pass_PPA × 0.10                           (10% ağırlık - ceza alanı pasları)
+      + (100 - def_Def 3rd) × 0.10                (10% ağırlık - ilerde oynar)
+
+ÖRNEK OYUNCULAR:
+- Luciano Valente (Groningen) - Score: 94.3
+- Levi Smans (Heerenveen) - Score: 89.2
+- Mohammed Ihattaren (RKC Waalwijk) - Score: 87.5
+
+------------------------------------------------------------------------------
+ARCHETYPE 8: BOX CRASHER / SHADOW STRIKER (Kutucuk Hırsızı)
+------------------------------------------------------------------------------
+TANIM:
+Gol atmaya odaklanmış, şut çeken, ceza alanına giren, forvete çok yakın
+oynayan orta saha oyuncusu. "Gölge forvet" olarak da bilinir.
+
+KARAKTERİSTİKLER:
+- Yüksek expected goals (std_xG)
+- Çok şut (shoot_Sh)
+- Goller (std_Gls)
+- Ceza alanına giriş (poss_CPA)
+- Şutla gol yaratan (gca_Sh)
+
+HESAPLAMA FORMÜLÜ:
+Score = std_xG × 0.30              (30% ağırlık - expected goals)
+      + shoot_Sh × 0.25            (25% ağırlık - şut sayısı)
+      + std_Gls × 0.20             (20% ağırlık - goller)
+      + poss_CPA × 0.15            (15% ağırlık - ceza alanı girişi)
+      + gca_Sh × 0.10              (10% ağırlık - şutla gol yaratma)
+
+ÖRNEK OYUNCULAR:
+- Ismael Saibari (PSV Eindhoven) - Score: 97.4
+- Sem Steijn (Twente) - Score: 94.4
+- Leo Sauer (NAC Breda) - Score: 91.9
+
+================================================================================
+3. ARCHETYPE SEÇİM MANTIĞI
+================================================================================
+
+Her oyuncu için 8 farklı archetype skoru hesaplanır.
+En yüksek skora sahip archetype o oyuncuya atanır.
+
+ÖRNEK: Anouar El Azzouzi (Zwolle)
+-------------------------------------
+Anchor_Score:       86.3
+DLP_Score:          96.2
+BallWinner_Score:   96.9  ← EN YÜKSEK
+BoxToBox_Score:     82.8
+Mezzala_Score:      84.0
+APM_Score:          58.3
+CAM_Score:          39.5
+BoxCrasher_Score:   54.7
+
+SONUÇ: Ball Winner archetype'ı atandı (96.9 skor ile)
+
+Bu oyuncu hem DLP hem Ball Winner özelliklerine sahip ama topu kazanma
+özellikleri daha baskın geldiği için Ball Winner olarak sınıflandırıldı.
+
+================================================================================
+4. SKORLARIN YORUMLANMASI
+================================================================================
+
+0-30:   Bu archetype için zayıf/uygunsuz
+30-50:  Düşük yetkinlik, ikincil özellik olabilir
+50-70:  Orta düzey yetkinlik, hibrit oyuncu
+70-85:  İyi yetkinlik, archetype'a uygun
+85-95:  Çok iyi, archetype'ın güçlü temsilcisi
+95-100: Elite seviye, archetype'ın en iyi örnekleri
+
+================================================================================
+5. ÖNEMLİ NOTLAR
+================================================================================
+
+1. HİBRİT OYUNCULAR:
+   Bazı oyuncular birden fazla archetype'a yüksek skor alabilir.
+   Bu normal ve beklenen bir durumdur. Örneğin Box-to-Box oyuncular
+   genelde birden fazla kategoride yüksek skor alır.
+
+2. CLUSTER vs ARCHETYPE:
+   - Cluster: K-means ile yapılan genel gruplandırma (3 cluster)
+   - Archetype: Futbol anlamı olan detaylı roller (8 archetype)
+   Archetype daha spesifik ve futbol mantığına daha yakın.
+
+3. PERCENTILE SİSTEMİ:
+   Percentile kullanımı sayesinde farklı ölçeklerdeki metrikler
+   karşılaştırılabilir hale gelir. Örneğin pas sayısı (0-100 arası)
+   ile pas başarı oranı (%40-95 arası) aynı ölçekte değerlendirilir.
+
+4. AĞIRLIKLAR:
+   Ağırlıklar futbol bilgisi ve domain expertise ile belirlenmiştir.
+   Her archetype'ın karakteristik özellikleri daha yüksek ağırlık alır.
+
+5. VERI SINIRLAMALARI:
+   - Sadece Eredivisie verisi kullanıldı
+   - Minimum oyun süresi filtrelenmemiş
+   - Az süre alan oyuncular düşük skorlar alabilir
+
+================================================================================
+6. KULLANIM ÖNERİLERİ
+================================================================================
+
+1. OYUNCU ANALİZİ:
+   Sadece atanan archetype'a bakmayın, tüm skorlara bakın.
+   İkinci yüksek skor da çok bilgi verebilir.
+
+2. TRANSFER SCOUTING:
+   Takımınızın ihtiyacı olan archetype'ı belirleyin ve
+   o kategoride yüksek skor alan oyuncuları listeleyin.
+
+3. TAKTİK PLANLAMA:
+   Kadronuzda hangi archetype'ların eksik olduğunu görün.
+   Dengeli bir kadro için farklı archetype'lara ihtiyaç var.
+
+4. OYUNCU GELİŞİMİ:
+   Genç oyuncuların zaman içinde hangi archetype'a doğru
+   geliştiğini takip edebilirsiniz.
+
+================================================================================
+
+Bu metodoloji ile Eredivisie orta saha oyuncuları futbol anlamı olan
+8 farklı archetype'a ayrıldı. Percentile tabanlı sistem sayesinde
+objektif ve karşılaştırılabilir skorlar elde edildi.
+
+================================================================================
+

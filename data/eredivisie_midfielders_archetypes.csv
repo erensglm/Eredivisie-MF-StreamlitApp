@@ -1,0 +1,50 @@
+Player,Archetype,Primary_Archetype,Secondary_Archetype,Archetype_Score,Anchor_Score,DLP_Score,BallWinner_Score,BoxToBox_Score,APM_Score,CAM_Score,BoxCrasher_Score
+Alonzo Engwanda,Anchor,Anchor,,62,62,37,55,27,12,12,11
+Amine Lachkar,Anchor/DLP,Anchor,DLP,78,78,78,68,49,22,24,25
+Anouar El Azzouzi,BallWinner/DLP,BallWinner,DLP,97,86,96,97,81,58,40,55
+Antoni Milambo,APM/BoxToBox,APM,BoxToBox,69,54,52,45,65,69,63,54
+Casper Staring,Anchor,Anchor,,26,26,11,11,6,4,10,7
+Daouda Weidmann,DLP/CAM,DLP,CAM,27,17,27,17,13,11,23,14
+Dirk Proper,DLP,DLP,,82,66,82,69,47,46,31,31
+Edouard Michut,BallWinner/Anchor,BallWinner,Anchor,51,48,33,51,28,7,28,41
+Enric Llansana,BallWinner/Anchor,BallWinner,Anchor,97,92,87,97,75,80,67,69
+Espen van Ee,BallWinner,BallWinner,,88,80,77,88,74,48,45,48
+Ezequiel Bullaude,BoxCrasher,BoxCrasher,,76,50,19,63,46,33,40,76
+Gjivai Zechiël,CAM/BoxCrasher,CAM,BoxCrasher,44,35,34,32,30,34,44,41
+Ismael Saibari,BoxCrasher,BoxCrasher,,97,51,60,53,78,89,87,97
+Jakob Breum,BoxCrasher/APM,BoxCrasher,APM,91,39,64,27,64,88,83,91
+Jan Žambůrek,Anchor/BallWinner,Anchor,BallWinner,40,40,28,36,15,21,14,7
+Jochem van de Kamp,BallWinner,BallWinner,,76,68,38,76,54,46,43,32
+Johan Hove,DLP,DLP,,70,44,70,39,31,39,34,38
+Jorg Schreuders,CAM/BoxToBox,CAM,BoxToBox,68,44,26,42,64,60,68,59
+Joshua Kitolano,CAM/Anchor,CAM,Anchor,53,51,41,44,48,51,53,44
+Julian Baas,DLP/APM,DLP,APM,38,22,38,18,13,34,25,10
+Kees Smit,APM/CAM,APM,CAM,54,31,42,24,34,54,54,37
+Kenneth Taylor,APM/BoxCrasher,APM,BoxCrasher,89,59,71,63,78,89,83,87
+Kian Fitz-Jim,BoxCrasher/CAM,BoxCrasher,CAM,50,29,42,33,46,41,48,50
+Kodai Sano,BallWinner/Anchor,BallWinner,Anchor,72,68,67,72,58,58,43,46
+Kristian Nökkvi Hlynsson,BoxCrasher/CAM,BoxCrasher,CAM,60,22,24,15,38,48,55,60
+Leo Sauer,BoxCrasher,BoxCrasher,,92,58,30,47,83,68,83,92
+Levi Smans,APM/CAM,APM,CAM,89,38,53,44,66,89,89,81
+Luciano Valente,APM/CAM,APM,CAM,96,37,66,34,75,96,95,76
+Malik Tillman,BoxCrasher/BoxToBox,BoxCrasher,BoxToBox,91,76,63,86,87,87,83,91
+Marcus Linday,Anchor/BallWinner,Anchor,BallWinner,59,59,50,55,54,32,37,35
+Mathias Kjølø,DLP,DLP,,49,19,49,18,19,23,23,12
+Max Balard,Anchor/BallWinner,Anchor,BallWinner,90,90,88,90,65,43,36,18
+Mohammed Ihattaren,CAM/APM,CAM,APM,88,26,56,18,60,86,88,79
+Nick Fichtinger,Anchor,Anchor,,57,57,24,44,23,18,16,15
+Oscar Fraulo,APM/BallWinner,APM,BallWinner,65,52,35,63,55,65,56,52
+Paxten Aaronson,BallWinner,BallWinner,,95,86,62,95,83,80,71,88
+Quinten Timber,BoxCrasher,BoxCrasher,,71,41,40,46,54,54,65,71
+Ringo Meerveld,DLP/CAM,DLP,CAM,84,49,84,39,71,81,82,66
+Roberto González,BoxCrasher,BoxCrasher,,60,12,6,9,20,16,40,60
+Ryan Fosso,DLP,DLP,,80,68,80,74,56,60,58,46
+Sami Ouaissa,BoxCrasher/CAM,BoxCrasher,CAM,76,24,15,37,51,53,72,76
+Sem Scheperman,BallWinner/Anchor,BallWinner,Anchor,82,77,61,82,46,19,17,30
+Sem Steijn,BoxCrasher,BoxCrasher,,94,25,50,26,57,88,74,94
+Stije Resink,BallWinner/Anchor,BallWinner,Anchor,87,82,74,87,68,51,56,70
+Tika de Jonge,Anchor/BallWinner,Anchor,BallWinner,57,57,50,53,38,27,28,27
+Yassin Oukili,BallWinner/Anchor,BallWinner,Anchor,83,80,54,83,77,69,64,79
+Youri Regeer,APM/DLP,APM,DLP,58,33,55,47,49,58,50,25
+Zico Buurmeester,BoxCrasher,BoxCrasher,,56,40,39,42,39,47,46,56
+Zidane Iqbal,DLP,DLP,,73,39,73,44,42,47,45,28
