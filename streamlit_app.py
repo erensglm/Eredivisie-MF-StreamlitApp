@@ -967,11 +967,13 @@ for cid, metrics in cluster_metrics_map.items():
                                 <div style='color: #888; font-size: 0.7rem;'>Age</div>
                                 <div style='font-weight: 600; color: #333;'>{player['Age']:.0f}</div>
                             </div>
-                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
-                                <div style='color: #888; font-size: 0.7rem;'>Position</div>
-                                <div style='font-weight: 600; color: #333;'>{player['Pos']}</div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Profile</div>
+                                <div style='font-weight: 600; color: {border_colors.get(cid, border_colors[0])}; font-size: 0.75rem;'>
+                                    {cid}: {cluster_profiles[cid]['name']}
+                                </div>
                             </div>
-                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
                                 <div style='color: #888; font-size: 0.7rem;'>Overall Rating</div>
                                 <div style='font-weight: 600; color: {border_colors.get(cid, border_colors[0])};'>
                                     {score_value:.1f}
@@ -994,6 +996,60 @@ for cid, metrics in cluster_metrics_map.items():
                             </div>
                             <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
                                Archetype Score: {archetype_score:.1f}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Performance stats - Dynamic based on archetype
+                    archetype = str(primary_archetype).strip()
+                    if archetype == 'Anchor':
+                        metric1_label, metric1_value = "Tkl+Int", player['def_Tkl+Int']
+                        metric2_label, metric2_value = "Blocks", player['def_Blocks']
+                        metric3_label, metric3_value = "Recoveries", player['misc_Recov']
+                    elif archetype == 'DLP':
+                        metric1_label, metric1_value = "Pass Success", player['pass_Cmp%']
+                        metric2_label, metric2_value = "Prog Distance", player['pass_PrgDist']
+                        metric3_label, metric3_value = "Prog Passes", player['pass_PrgP']
+                    elif archetype == 'BallWinner':
+                        metric1_label, metric1_value = "Tkl+Int", player['def_Tkl+Int']
+                        metric2_label, metric2_value = "Tkl Won", player['def_TklW']
+                        metric3_label, metric3_value = "Recoveries", player['misc_Recov']
+                    elif archetype == 'BoxToBox':
+                        metric1_label, metric1_value = "Prog Runs", player['std_PrgR']
+                        metric2_label, metric2_value = "Recoveries", player['misc_Recov']
+                        metric3_label, metric3_value = "Prog Distance", player['poss_PrgDist']
+                    elif archetype == 'APM':
+                        metric1_label, metric1_value = "Key Passes", player['pass_KP']
+                        metric2_label, metric2_value = "xAG", player['std_xAG']
+                        metric3_label, metric3_value = "GCA Pass", player['gca_PassLive']
+                    elif archetype == 'CAM':
+                        metric1_label, metric1_value = "Final 3rd", player['poss_1/3']
+                        metric2_label, metric2_value = "Pen Area", player['poss_CPA']
+                        metric3_label, metric3_value = "xAG", player['std_xAG']
+                    elif archetype == 'BoxCrasher':
+                        metric1_label, metric1_value = "xG", player['std_xG']
+                        metric2_label, metric2_value = "Shots", player['shoot_Sh']
+                        metric3_label, metric3_value = "Goals", player['std_Gls']
+                    else:  # Default/fallback metrics
+                        metric1_label, metric1_value = "Minutes", player['std_Min']
+                        metric2_label, metric2_value = "Pass Success", player['pass_Cmp%']
+                        metric3_label, metric3_value = "Matches", player['std_MP']
+                    
+                    st.markdown(f"""
+                        <div style='margin-top: 0.8rem; padding: 0.6rem; background: #f9f9f9; border-radius: 5px;'>
+                            <div style='display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; font-size: 0.75rem; text-align: center;'>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric1_label}</div>
+                                    <div style='font-weight: 600; color: #FF6B6B;'>{metric1_value:.1f}</div>
+                                </div>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric2_label}</div>
+                                    <div style='font-weight: 600; color: #4ECDC4;'>{metric2_value:.1f}</div>
+                                </div>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric3_label}</div>
+                                    <div style='font-weight: 600; color: #45B7D1;'>{metric3_value:.1f}</div>
+                                </div>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -1062,11 +1118,172 @@ def update_player_view(selected_players):
     # Player Profile information of selected players
     unique_clusters = selected_rows["Cluster"].unique()
     
-    # Show player profile information
-    for cluster_id in unique_clusters:
-        players_in_cluster = selected_rows[selected_rows["Cluster"] == cluster_id]["Player"].tolist()
-        st.write(f"**Player Profile {cluster_id}: {cluster_profiles[cluster_id]['name']}** → {', '.join(players_in_cluster)}")
-        st.caption(cluster_profiles[cluster_id]['description'])
+    # ---------------------------
+    # Selected Players Profile Cards
+    # ---------------------------
+    st.markdown("### 🎯 Selected Player Cards")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Calculate overall ratings for selected players
+    cluster_metrics_map_analysis = {
+        0: ['std_Gls','std_Ast','std_xG','std_xAG','pass_KP','shoot_Sh','gca_PassLive'],
+        1: ['std_Min','pass_Cmp%','pt_Min%','misc_Won','std_MP'],
+        2: ['def_Tkl','def_TklW','def_Int','def_Blocks','misc_Recov','misc_TklW','poss_PrgDist']
+    }
+    
+    # Create player cards in rows (3 cards per row for compact view)
+    for idx in range(0, len(selected_players), 3):
+        cols = st.columns(3, gap="medium")
+        
+        for col_idx, col in enumerate(cols):
+            player_idx = idx + col_idx
+            if player_idx < len(selected_players):
+                player_name = selected_players[player_idx]
+                player = selected_rows[selected_rows["Player"] == player_name].iloc[0]
+                
+                # Get archetype info
+                primary_archetype = player.get('Primary_Archetype', 'N/A')
+                archetype_score = player.get('Archetype_Score', 0)
+                
+                # Border colors based on cluster
+                border_colors = {0: '#1E88E5', 1: '#43A047', 2: '#FB8C00'}
+                cluster_id = player['Cluster']
+                
+                # Calculate overall rating for this player
+                metrics_for_cluster = cluster_metrics_map_analysis.get(cluster_id, [])
+                available_metrics = [m for m in metrics_for_cluster if m in df_filtered.columns]
+                if available_metrics:
+                    scaler_rating = MinMaxScaler()
+                    scaled_vals = scaler_rating.fit_transform(df_filtered[available_metrics])
+                    player_idx_in_df = df_filtered[df_filtered['Player'] == player_name].index[0]
+                    player_position_in_filtered = df_filtered.index.get_loc(player_idx_in_df)
+                    overall_rating = scaled_vals[player_position_in_filtered].mean() * 100
+                else:
+                    overall_rating = 0
+                
+                with col:
+                    # Minimal card with border
+                    st.markdown(f"""
+                        <div style='border: 2px solid {border_colors.get(cluster_id, border_colors[0])};
+                                    border-radius: 10px; padding: 1rem; 
+                                    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <div style='text-align: center;'>
+                                <div style='color: {border_colors.get(cluster_id, border_colors[0])}; 
+                                            font-size: 0.8rem; font-weight: 600;'>
+                                    SELECTED #{player_idx + 1}
+                                </div>
+                                <h4 style='margin: 0.3rem 0; color: #333; font-size: 1.1rem;'>
+                                    {player['Player']}
+                                </h4>
+                                <p style='margin: 0; color: #666; font-size: 0.85rem;'>
+                                    {player['Squad']}
+                                </p>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Compact info grid
+                    st.markdown(f"""
+                        <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; 
+                                    margin-top: 0.8rem; font-size: 0.85rem;'>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Nation</div>
+                                <div style='font-weight: 600; color: #333;'>{player.get('Nation', 'N/A')}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Age</div>
+                                <div style='font-weight: 600; color: #333;'>{player['Age']:.0f}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Profile</div>
+                                <div style='font-weight: 600; color: {border_colors.get(cluster_id, border_colors[0])}; font-size: 0.75rem;'>
+                                    {cluster_id}: {cluster_profiles[cluster_id]['name']}
+                                </div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Overall Rating</div>
+                                <div style='font-weight: 600; color: {border_colors.get(cluster_id, border_colors[0])};'>
+                                    {overall_rating:.1f}
+                                </div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Archetype section
+                    st.markdown(f"""
+                        <div style='margin-top: 0.8rem; padding: 0.6rem; 
+                                    background: linear-gradient(135deg, {border_colors.get(cluster_id, border_colors[0])}15, {border_colors.get(cluster_id, border_colors[0])}05);
+                                    border-radius: 5px; text-align: center;'>
+                            <div style='color: #888; font-size: 0.7rem; margin-bottom: 0.2rem;'>
+                                Archetype
+                            </div>
+                            <div style='font-weight: 700; color: {border_colors.get(cluster_id, border_colors[0])}; 
+                                        font-size: 0.95rem;'>
+                                {primary_archetype}
+                            </div>
+                            <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
+                               Archetype Score: {archetype_score:.1f}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Performance stats - Dynamic based on archetype
+                    archetype = str(primary_archetype).strip()
+                    if archetype == 'Anchor':
+                        metric1_label, metric1_value = "Tkl+Int", player['def_Tkl+Int']
+                        metric2_label, metric2_value = "Blocks", player['def_Blocks']
+                        metric3_label, metric3_value = "Recoveries", player['misc_Recov']
+                    elif archetype == 'DLP':
+                        metric1_label, metric1_value = "Pass Success", player['pass_Cmp%']
+                        metric2_label, metric2_value = "Prog Distance", player['pass_PrgDist']
+                        metric3_label, metric3_value = "Prog Passes", player['pass_PrgP']
+                    elif archetype == 'BallWinner':
+                        metric1_label, metric1_value = "Tkl+Int", player['def_Tkl+Int']
+                        metric2_label, metric2_value = "Tkl Won", player['def_TklW']
+                        metric3_label, metric3_value = "Recoveries", player['misc_Recov']
+                    elif archetype == 'BoxToBox':
+                        metric1_label, metric1_value = "Prog Runs", player['std_PrgR']
+                        metric2_label, metric2_value = "Recoveries", player['misc_Recov']
+                        metric3_label, metric3_value = "Prog Distance", player['poss_PrgDist']
+                    elif archetype == 'APM':
+                        metric1_label, metric1_value = "Key Passes", player['pass_KP']
+                        metric2_label, metric2_value = "xAG", player['std_xAG']
+                        metric3_label, metric3_value = "GCA Pass", player['gca_PassLive']
+                    elif archetype == 'CAM':
+                        metric1_label, metric1_value = "Final 3rd", player['poss_1/3']
+                        metric2_label, metric2_value = "Pen Area", player['poss_CPA']
+                        metric3_label, metric3_value = "xAG", player['std_xAG']
+                    elif archetype == 'BoxCrasher':
+                        metric1_label, metric1_value = "xG", player['std_xG']
+                        metric2_label, metric2_value = "Shots", player['shoot_Sh']
+                        metric3_label, metric3_value = "Goals", player['std_Gls']
+                    else:  # Default/fallback metrics
+                        metric1_label, metric1_value = "Minutes", player['std_Min']
+                        metric2_label, metric2_value = "Pass Success", player['pass_Cmp%']
+                        metric3_label, metric3_value = "Matches", player['std_MP']
+                    
+                    st.markdown(f"""
+                        <div style='margin-top: 0.8rem; padding: 0.6rem; background: #f9f9f9; border-radius: 5px;'>
+                            <div style='display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; font-size: 0.75rem; text-align: center;'>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric1_label}</div>
+                                    <div style='font-weight: 600; color: #FF6B6B;'>{metric1_value:.1f}</div>
+                                </div>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric2_label}</div>
+                                    <div style='font-weight: 600; color: #4ECDC4;'>{metric2_value:.1f}</div>
+                                </div>
+                                <div>
+                                    <div style='color: #888; font-size: 0.65rem;'>{metric3_label}</div>
+                                    <div style='font-weight: 600; color: #45B7D1;'>{metric3_value:.1f}</div>
+                                </div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("---")
 
     # ---------------------------
     # Multi-Player vs Cluster Radar

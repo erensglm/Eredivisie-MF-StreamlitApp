@@ -54,7 +54,7 @@ Score = def_Tkl+Int × 0.25        (25% ağırlık - topu kazanma)
 - Alonzo Engwanda (Utrecht) - Score: 61.8
 
 ------------------------------------------------------------------------------
-ARCHETYPE 2: DEEP LYING PLAYMAKER (DLP - Geride Oyun Kuran)
+ARCHETYPE 2: DEEP LYING PLAYMAKER (DLP - Derin Oyun Kurucu)
 ------------------------------------------------------------------------------
 TANIM:
 Defansif bölgeden oyunu başlatan, uzun paslarla hücumu kuran, teknik oyuncu.
@@ -81,7 +81,7 @@ Score = pass_Cmp% × 0.20           (20% ağırlık - pas başarısı)
 - Dirk Proper (NEC Nijmegen) - Score: 81.7
 
 ------------------------------------------------------------------------------
-ARCHETYPE 3: BALL WINNER (Top Avcısı)
+ARCHETYPE 3: BALL WINNER (Top Kazanan)
 ------------------------------------------------------------------------------
 TANIM:
 Agresif, fiziksel, topu kazanmaya odaklanmış orta saha oyuncusu.
@@ -107,7 +107,7 @@ Score = def_Tkl+Int × 0.30         (30% ağırlık - toplam top kapma)
 - Paxten Aaronson (Utrecht) - Score: 95.7
 
 ------------------------------------------------------------------------------
-ARCHETYPE 4: BOX-TO-BOX (Kutuptan Kutupa)
+ARCHETYPE 4: BOX-TO-BOX (İki Yönlü)
 ------------------------------------------------------------------------------
 TANIM:
 Her iki ceza sahasında da etkili olan, yüksek kondisyon, dengeli oyuncu.
@@ -135,31 +135,6 @@ Score = std_PrgR × 0.25            (25% ağırlık - progressive runs)
 - Paxten Aaronson (Utrecht) - Score: 83.5
 - Anouar El Azzouzi (Zwolle) - Score: 82.8
 
-------------------------------------------------------------------------------
-ARCHETYPE 5: MEZZALA (Yan Koridor Oyuncusu)
-------------------------------------------------------------------------------
-TANIM:
-Merkez orta sahadan başlayıp yan koridorlara açılan, topla ilerlemeyi seven,
-carry odaklı, dinamik oyuncu. Daha çok hücuma yönelik ama defansa da katkı var.
-
-KARAKTERİSTİKLER:
-- Çok fazla top taşır (poss_Carries)
-- Progressive carries (poss_PrgC)
-- Top taşıma mesafesi (poss_PrgDist)
-- Progressive actions (std_PrgR)
-- Orta düzey defans (def_Tkl+Int)
-
-HESAPLAMA FORMÜLÜ:
-Score = poss_Carries × 0.25        (25% ağırlık - top taşıma sayısı)
-      + poss_PrgC × 0.25           (25% ağırlık - progressive carries)
-      + poss_PrgDist × 0.20        (20% ağırlık - taşıma mesafesi)
-      + std_PrgR × 0.15            (15% ağırlık - progressive runs)
-      + def_Tkl+Int × 0.15         (15% ağırlık - defansif denge)
-
-ÖRNEK OYUNCULAR:
-- Kenneth Taylor (Ajax) - Score: 87.9
-- Leo Sauer (NAC Breda) - Score: 86.6
-- Anouar El Azzouzi (Zwolle) - Score: 84.0
 
 ------------------------------------------------------------------------------
 ARCHETYPE 6: ADVANCED PLAYMAKER (APM - İleri Oyun Kurucu)
@@ -218,7 +193,7 @@ Score = poss_1/3 × 0.20                           (20% ağırlık - final üçl
 - Mohammed Ihattaren (RKC Waalwijk) - Score: 87.5
 
 ------------------------------------------------------------------------------
-ARCHETYPE 8: BOX CRASHER / SHADOW STRIKER (Kutucuk Hırsızı)
+ARCHETYPE 8: BOX CRASHER / SHADOW STRIKER (Gölge Santrafor)
 ------------------------------------------------------------------------------
 TANIM:
 Gol atmaya odaklanmış, şut çeken, ceza alanına giren, forvete çok yakın
@@ -333,3 +308,32 @@ objektif ve karşılaştırılabilir skorlar elde edildi.
 
 ================================================================================
 
+Archetype'lara göre profil kartında gösterilen metrikler:
+🏗️ Anchor (Çapa Orta Saha):
+Tkl+Int (Tacle + Müdahale)
+Blocks (Blok)
+Recoveries (Top Kurtarma)
+🎯 DLP (Deep Lying Playmaker):
+Pass Success (Pas Başarısı)
+Prog Distance (Progressive Mesafe)
+Prog Passes (Progressive Paslar)
+⚔️ BallWinner (Top Kazanan):
+Tkl+Int (Tacle + Müdahale)
+Tkl Won (Kazanılan Tacle)
+Recoveries (Top Kurtarma)
+🔄 BoxToBox (İki Yönlü):
+Prog Runs (Progressive Koşular)
+Recoveries (Top Kurtarma)
+Prog Distance (Progressive Mesafe)
+🎨 APM (Advanced Playmaker):
+Key Passes (Kilit Paslar)
+xAG (Expected Assists)
+GCA Pass (Gol Yaratma Pasları)
+⚡ CAM (Attacking Midfielder):
+Final 3rd (Final Üçlü)
+Pen Area (Ceza Alanı)
+xAG (Expected Assists)
+🎯 BoxCrasher (Gölge Santrafor):
+xG (Expected Goals)
+Shots (Şutlar)
+Goals (Goller)
