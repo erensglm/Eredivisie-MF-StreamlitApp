@@ -913,16 +913,92 @@ for cid, metrics in cluster_metrics_map.items():
     # Top 5 in this cluster
     top_players = df_rank[df_rank["Cluster"] == cid].nlargest(5, f"Cluster{cid}_Score")
 
-    # Columns to display
-    show_cols = ["Player","Age","Pos","Squad",f"Cluster{cid}_Score"] + available_metrics
-    renamed_cols = {col: column_info.get(col, col) for col in show_cols}
-
-    st.markdown("**Top 5 Rankings:**")
-    st.dataframe(
-        top_players[show_cols].rename(columns=renamed_cols),
-        use_container_width=True,
-        height=250
-    )
+    # Player Report Cards - Minimal Design
+    st.markdown("### 🏆 Player Report")
+    st.markdown("---")
+    
+    # Create player cards in rows (3 cards per row for compact view)
+    for idx in range(0, len(top_players), 3):
+        cols = st.columns(3, gap="medium")
+        
+        for col_idx, col in enumerate(cols):
+            player_idx = idx + col_idx
+            if player_idx < len(top_players):
+                player = top_players.iloc[player_idx]
+                
+                # Get archetype info
+                primary_archetype = player.get('Primary_Archetype', 'N/A')
+                archetype_score = player.get('Archetype_Score', 0)
+                
+                # Border colors based on cluster
+                border_colors = {0: '#1E88E5', 1: '#43A047', 2: '#FB8C00'}
+                score_value = player[f"Cluster{cid}_Score"] * 100
+                
+                with col:
+                    # Minimal card with border
+                    st.markdown(f"""
+                        <div style='border: 2px solid {border_colors.get(cid, border_colors[0])};
+                                    border-radius: 10px; padding: 1rem; 
+                                    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <div style='text-align: center;'>
+                                <div style='color: {border_colors.get(cid, border_colors[0])}; 
+                                            font-size: 0.8rem; font-weight: 600;'>
+                                    #{player_idx + 1}
+                                </div>
+                                <h4 style='margin: 0.3rem 0; color: #333; font-size: 1.1rem;'>
+                                    {player['Player']}
+                                </h4>
+                                <p style='margin: 0; color: #666; font-size: 0.85rem;'>
+                                    {player['Squad']}
+                                </p>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Compact info grid
+                    st.markdown(f"""
+                        <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; 
+                                    margin-top: 0.8rem; font-size: 0.85rem;'>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Nation</div>
+                                <div style='font-weight: 600; color: #333;'>{player.get('Nation', 'N/A')}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Age</div>
+                                <div style='font-weight: 600; color: #333;'>{player['Age']:.0f}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Position</div>
+                                <div style='font-weight: 600; color: #333;'>{player['Pos']}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Score</div>
+                                <div style='font-weight: 600; color: {border_colors.get(cid, border_colors[0])};'>
+                                    {score_value:.1f}
+                                </div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Archetype section
+                    st.markdown(f"""
+                        <div style='margin-top: 0.8rem; padding: 0.6rem; 
+                                    background: linear-gradient(135deg, {border_colors.get(cid, border_colors[0])}15, {border_colors.get(cid, border_colors[0])}05);
+                                    border-radius: 5px; text-align: center;'>
+                            <div style='color: #888; font-size: 0.7rem; margin-bottom: 0.2rem;'>
+                                Archetype
+                            </div>
+                            <div style='font-weight: 700; color: {border_colors.get(cid, border_colors[0])}; 
+                                        font-size: 0.95rem;'>
+                                {primary_archetype}
+                            </div>
+                            <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
+                                Score: {archetype_score:.1f}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
     
     st.divider()
 # ---------------------------
