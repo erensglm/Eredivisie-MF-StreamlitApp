@@ -68,7 +68,7 @@ st.markdown("""
     
     /* Expander container - Add spacing between expanders */
     [data-testid="stExpander"] {
-        margin: 1.5rem 0 !important;
+        margin: 0.2rem 0 !important;
     }
     
     /* Expander styling - Eredivisie orange theme */
@@ -803,91 +803,6 @@ for cid, metrics in cluster_metrics_map.items():
     
     # Calculate cluster statistics from real data
     cluster_data = df_filtered[df_filtered['Cluster'] == cid]
-    
-    # Show individual standout features of top 5 players
-    if len(cluster_data) > 0:
-        with st.expander(f"Outstanding Features of Top 5 Players (Click to collapse)", expanded=True):
-            # Determine best players by cluster directly from CSV
-            if cid == 0:  # Elite Creative Attack
-                # Highest goal+assist combination
-                cluster_data_sorted = cluster_data.copy()
-                cluster_data_sorted['combined_score'] = cluster_data_sorted['std_Gls'] + cluster_data_sorted['std_Ast']
-                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-                
-                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                    # Make specific comments for each player
-                    gol = player['std_Gls']
-                    asist = player['std_Ast']
-                    xg = player['std_xG']
-                    
-                    # Generate comments
-                    comment = ""
-                    if gol > 1.5 and asist > 1.0:
-                        comment = "**Elite finisher and creator** - Both scores goals and provides assists"
-                    elif gol > 2.0:
-                        comment = "**Super goalscorer** - Team's most reliable goal machine"
-                    elif asist > 1.5:
-                        comment = "**Playmaker** - Constantly sets up teammates for goals"
-                    elif xg > 2.0:
-                        comment = "**High potential** - Statistically gets into very effective positions"
-                    else:
-                        comment = "**Balanced player** - Versatile profile contributing in many areas"
-                        
-                    st.write(f"**{idx}. {player['Player']}**: {comment}")
-                    
-            elif cid == 1:  # Development Phase
-                # Highest pass success + playing time
-                cluster_data_sorted = cluster_data.copy()
-                cluster_data_sorted['combined_score'] = cluster_data_sorted['pass_Cmp%'] + (cluster_data_sorted['std_Min'] / 1000)  # Normalize minutes
-                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-                
-                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                    # Make specific comments for each player
-                    pas_success = player['pass_Cmp%']
-                    minutes = player['std_Min']
-                    play_ratio = player['pt_Min%']
-                    
-                    # Generate comments
-                    comment = ""
-                    if minutes > 2000 and pas_success > 0.5:
-                        comment = "**Experienced reliable** - Plays a lot and has high pass quality"
-                    elif minutes > 2000:
-                        comment = "**Hard-working engine** - Constantly plays in the team, gaining experience"
-                    elif pas_success > 0.8:
-                        comment = "**Technical ability** - Very high pass quality, reliable"
-                    elif play_ratio > 0.5:
-                        comment = "**Rising value** - Has gained coach's trust, potential"
-                    else:
-                        comment = "**Promising future** - Still raw but open to development profile"
-                        
-                    st.write(f"**{idx}. {player['Player']}**: {comment}")
-                    
-            elif cid == 2:  # Defensive Engine
-                # Highest defensive contribution
-                cluster_data_sorted = cluster_data.copy()
-                cluster_data_sorted['combined_score'] = cluster_data_sorted['def_Tkl'] + cluster_data_sorted['misc_Recov']
-                top_5 = cluster_data_sorted.nlargest(5, 'combined_score')
-                
-                for idx, (_, player) in enumerate(top_5.iterrows(), 1):
-                    # Make specific comments for each player
-                    tackles = player['def_Tkl']
-                    interceptions = player['def_Int']
-                    recoveries = player['misc_Recov']
-                    
-                    # Generate comments
-                    comment = ""
-                    if tackles > 2.5 and recoveries > 2.5:
-                        comment = "**Defensive wall** - Both aggressive and intelligent defending"
-                    elif tackles > 3.0:
-                        comment = "**Aggressive warrior** - Fighting style that doesn't let opponents breathe"
-                    elif recoveries > 3.0:
-                        comment = "**Smart cleaner** - Master of ball recovery through positioning"
-                    elif interceptions > 2.0:
-                        comment = "**Game reader** - Intelligent defender who intercepts opponent passes"
-                    else:
-                        comment = "**Reliable worker** - Quiet but effective, team's indispensable"
-                        
-                    st.write(f"**{idx}. {player['Player']}**: {comment}")
     
     st.info(f"**Playing Style**: {cluster_profiles[cid]['detailed_stats'].get('playing_style', 'General midfield players')}")
 
