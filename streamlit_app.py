@@ -528,20 +528,116 @@ with col4:
 
 st.divider()
 
-# Player Profiles Section with Modern Design
+# Navigation Tabs Section
 st.markdown("""
     <div style='text-align: center; margin: 3rem 0 2rem 0;'>
         <h2 style='font-size: 2.5rem; font-weight: 800; margin: 0;
                    background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
                    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
                    background-clip: text;'>
-             Player Profile Types
+             Dashboard Navigation
         </h2>
         <p style='color: #888; font-size: 1.1rem; margin: 0.5rem 0 0 0;'>
-            Understand the three distinct player profiles in our analysis
+            Explore different sections of the analytics dashboard
         </p>
     </div>
 """, unsafe_allow_html=True)
+
+# Create 7 main navigation tabs
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    "📊 Overview", 
+    "👥 Player Profiles", 
+    "🏆 Top Players", 
+    "🔍 Player Analysis", 
+    "📈 Scatter Analysis", 
+    "📉 Trend Analysis", 
+    "📊 Distribution Analysis"
+])
+
+with tab1:
+    st.markdown("### 📊 Dashboard Overview")
+    st.markdown("Welcome to the Eredivisie U24 Midfielders Analytics Dashboard. This comprehensive platform provides data-driven insights into the most promising young midfielders in the Dutch Eredivisie.")
+    
+    # Quick stats from earlier
+    col1, col2, col3, col4 = st.columns(4, gap="large")
+    with col1:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%); 
+                        padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                        box-shadow: 0 10px 40px rgba(255, 102, 0, 0.4);'>
+                <div style='font-size: 2.8rem; font-weight: 800; color: white;'>48</div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>TOTAL PLAYERS</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #FFA500 0%, #FFB84D 100%); 
+                        padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                        box-shadow: 0 10px 40px rgba(255, 165, 0, 0.4);'>
+                <div style='font-size: 2.8rem; font-weight: 800; color: white;'>3</div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>PLAYER PROFILES</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #FF8533 0%, #FFA64D 100%); 
+                        padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                        box-shadow: 0 10px 40px rgba(255, 133, 51, 0.4);'>
+                <div style='font-size: 2.8rem; font-weight: 800; color: white;'>18-24</div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>AGE RANGE</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with col4:
+        st.markdown("""
+            <div style='background: linear-gradient(135deg, #FFB84D 0%, #FFC966 100%); 
+                        padding: 2rem 1.5rem; border-radius: 20px; text-align: center; 
+                        box-shadow: 0 10px 40px rgba(255, 184, 77, 0.4);'>
+                <div style='font-size: 2.8rem; font-weight: 800; color: white;'>18</div>
+                <div style='color: white; font-weight: 600; margin-top: 0.5rem;'>TEAMS</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+with tab2:
+    st.markdown("### 👥 Player Profile Types")
+    st.markdown("Understand the three distinct player profiles in our analysis")
+    
+    # Player Profile expanders will go here
+    # (Moving the existing player profile content here)
+
+with tab3:
+    st.markdown("### 🏆 Top 5 Players by Profile")
+    st.markdown("Discover the best performers in each player profile category")
+    
+    # Top 5 players content will go here
+    # (Moving the existing top 5 content here)
+
+with tab4:
+    st.markdown("### 🔍 Player Analysis & Comparison")
+    st.markdown("Deep dive into individual player performance with radar charts and similarity analysis")
+    
+    # Player analysis content will go here
+    # (Moving the existing player analysis content here)
+
+with tab5:
+    st.markdown("### 📈 Advanced Scatter Plot Analyses")
+    st.markdown("Explore correlations and relationships between different player metrics")
+    
+    # Scatter plot content will go here
+    # (Moving the existing scatter plot content here)
+
+with tab6:
+    st.markdown("### 📉 Trend & Line Chart Analyses")
+    st.markdown("Discover performance trends across different dimensions")
+    
+    # Trend analysis content will go here
+    # (Moving the existing trend content here)
+
+with tab7:
+    st.markdown("### 📊 Distribution Analysis (Histograms)")
+    st.markdown("Understand how player metrics are distributed across the dataset")
+    
+    # Distribution analysis content will go here
+    # (Moving the existing histogram content here)
 
 # Add custom CSS for Player Profile expanders - tighter spacing
 st.markdown("""
