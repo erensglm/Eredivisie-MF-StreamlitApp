@@ -972,7 +972,7 @@ for cid, metrics in cluster_metrics_map.items():
                                 <div style='font-weight: 600; color: #333;'>{player['Pos']}</div>
                             </div>
                             <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
-                                <div style='color: #888; font-size: 0.7rem;'>Score</div>
+                                <div style='color: #888; font-size: 0.7rem;'>Overall Rating</div>
                                 <div style='font-weight: 600; color: {border_colors.get(cid, border_colors[0])};'>
                                     {score_value:.1f}
                                 </div>
@@ -993,7 +993,7 @@ for cid, metrics in cluster_metrics_map.items():
                                 {primary_archetype}
                             </div>
                             <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
-                                Score: {archetype_score:.1f}
+                               Archetype Score: {archetype_score:.1f}
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
