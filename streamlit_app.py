@@ -1011,8 +1011,27 @@ with tab2:
     
     # Column Descriptions Section
     with st.expander("Column Descriptions (Click to expand)", expanded=False):
-        for col, desc in column_info.items():
-            st.markdown(f"**{col}**: {desc}", unsafe_allow_html=True)
+        # Create columns for better layout
+        col1, col2, col3 = st.columns(3, gap="medium")
+        
+        # Split column_info into 3 parts
+        items = list(column_info.items())
+        chunk_size = len(items) // 3
+        remainder = len(items) % 3
+        
+        # Distribute items across columns
+        start = 0
+        for i, col in enumerate([col1, col2, col3]):
+            if i < remainder:
+                end = start + chunk_size + 1
+            else:
+                end = start + chunk_size
+            
+            with col:
+                for col_name, desc in items[start:end]:
+                    st.markdown(f"**{col_name}**: {desc}", unsafe_allow_html=True)
+            
+            start = end
 
 with tab3:
     st.markdown("### Top 5 Players by Profile")
