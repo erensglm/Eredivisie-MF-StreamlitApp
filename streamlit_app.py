@@ -82,33 +82,75 @@ st.markdown("""
     /* Clean expanders */
     [data-testid="stExpander"] {
         margin: 0.5rem 0 !important;
+        background: #2563eb !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
     }
     
     .streamlit-expanderHeader {
-        background: #f8f9fa;
+        background: #2563eb !important;
         border-radius: 8px;
         border: 1px solid #e9ecef;
         font-weight: 500;
         padding: 0.75rem 1rem !important;
-        color: #495057 !important;
+        color: #ffffff !important;
         transition: all 0.2s ease;
     }
     
     .streamlit-expanderHeader:hover {
-        background: #e9ecef;
+        background: #1d4ed8 !important;
         border-color: #2563eb;
     }
     
     .streamlit-expanderHeader svg {
-        stroke: #2563eb !important;
+        stroke: #ffffff !important;
     }
     
     .streamlit-expanderHeader p {
-        color: #495057 !important;
+        color: #ffffff !important;
     }
     
     .streamlit-expanderHeader span {
-        color: #495057 !important;
+        color: #ffffff !important;
+    }
+    
+    .streamlit-expanderHeader div {
+        color: #ffffff !important;
+    }
+    
+    .streamlit-expanderHeader * {
+        color: #ffffff !important;
+    }
+    
+    /* Force white text for all expander content */
+    [data-testid="stExpander"] .streamlit-expanderHeader,
+    [data-testid="stExpander"] .streamlit-expanderHeader *,
+    [data-testid="stExpander"] .streamlit-expanderHeader p,
+    [data-testid="stExpander"] .streamlit-expanderHeader span,
+    [data-testid="stExpander"] .streamlit-expanderHeader div {
+        color: #ffffff !important;
+    }
+    
+    /* Additional specific selectors for expander text */
+    .streamlit-expanderHeader .streamlit-expanderHeaderContent,
+    .streamlit-expanderHeader .streamlit-expanderHeaderContent *,
+    .streamlit-expanderHeader button,
+    .streamlit-expanderHeader button * {
+        color: #ffffff !important;
+    }
+    
+    /* Override any existing text colors in expanders */
+    [data-testid="stExpander"] * {
+        color: #ffffff !important;
+    }
+    
+    /* Specific for expander header text */
+    [data-testid="stExpander"] .streamlit-expanderHeader {
+        color: #ffffff !important;
+    }
+    
+    [data-testid="stExpander"] .streamlit-expanderHeader * {
+        color: #ffffff !important;
     }
     
     [data-testid="stExpanderDetails"] {
@@ -118,6 +160,19 @@ st.markdown("""
         background: #ffffff;
         padding: 1rem;
         margin-top: -1px;
+    }
+    
+    /* Column Descriptions content should have black text */
+    [data-testid="stExpanderDetails"] * {
+        color: #000000 !important;
+    }
+    
+    [data-testid="stExpanderDetails"] p {
+        color: #000000 !important;
+    }
+    
+    [data-testid="stExpanderDetails"] strong {
+        color: #000000 !important;
     }
     
     /* Clean dataframes */
@@ -409,10 +464,6 @@ column_info = {
     "pt_Mn/MP": "Minutes per Match",
     "Cluster": "Player Cluster"
 }
-
-with st.expander("COLUMN DESCRIPTIONS (Click to expand)", expanded=False):
-    for col, desc in column_info.items():
-        st.markdown(f"**{col}**: {desc}", unsafe_allow_html=True)
 
 # ---------------------------
 # Cluster Profilleri (Gerçek Veri Analizine Dayalı)
@@ -944,8 +995,24 @@ with tab2:
             </div>
         """, unsafe_allow_html=True)
 
-    with st.expander("View Detailed Player Data (Click to expand table)", expanded=False):
-        st.dataframe(df_filtered, use_container_width=True, height=400)
+    st.markdown("""
+        <div style='text-align: center; margin: 2rem 0 1rem 0;'>
+            <h2 style='font-size: 1.5rem; font-weight: 600; margin: 0; color: #2563eb;'>
+                View Detailed Player Data
+            </h2>
+            <p style='color: #6c757d; font-size: 0.9rem; margin: 0.5rem 0 0 0;'>
+                Complete player statistics and performance metrics
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    st.dataframe(df_filtered, use_container_width=True, height=400)
+
+    st.markdown("---")
+    
+    # Column Descriptions Section
+    with st.expander("Column Descriptions (Click to expand)", expanded=False):
+        for col, desc in column_info.items():
+            st.markdown(f"**{col}**: {desc}", unsafe_allow_html=True)
 
 with tab3:
     st.markdown("### Top 5 Players by Profile")
