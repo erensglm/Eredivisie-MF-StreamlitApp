@@ -964,7 +964,7 @@ with tab2:
                 Filtered Players
             </h2>
             <p style='color: #6c757d; font-size: 0.9rem; margin: 0.5rem 0 0 0;'>
-                Current filter results and player statistics
+                Current filter results and player statistics (use filters in top-left corner)
             </p>
         </div>
     """, unsafe_allow_html=True)
