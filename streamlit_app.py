@@ -263,10 +263,10 @@ st.markdown("""
 # ---------------------------
 
 # Dosya yolu düzeltmesi - hem local hem de cloud için çalışır
-if os.path.exists('data/eredivisie_midfielders_scored.csv'):
-    df = pd.read_csv('data/eredivisie_midfielders_scored.csv')
-elif os.path.exists('notebooks/../data/eredivisie_midfielders_scored.csv'):
-    df = pd.read_csv('notebooks/../data/eredivisie_midfielders_scored.csv')
+if os.path.exists('data/eredivisie_midfielders_final_profiles.csv'):
+    df = pd.read_csv('data/eredivisie_midfielders_final_profiles.csv')
+elif os.path.exists('notebooks/../data/eredivisie_midfielders_final_profiles.csv'):
+    df = pd.read_csv('notebooks/../data/eredivisie_midfielders_final_profiles.csv')
 else:
     st.error("CSV file not found!")
     st.stop()
@@ -297,8 +297,8 @@ def get_archetype_color(archetype):
         'BallWinner': '#d97706',  # Yellow
         'BoxToBox': '#16a34a',   # Green
         'APM': '#059669',        # Teal
-        'CAM': '#2563eb',        # Blue
-        'BoxCrasher': '#7c3aed'  # Purple
+        'Mezzala': '#2563eb',        # Blue (moved from CAM)
+        'ShadowStriker': '#7c3aed'  # Purple (was BoxCrasher)
     }
     return archetype_colors.get(archetype, '#6b7280')  # Default gray
 
@@ -373,14 +373,14 @@ def get_score_color(score, archetype):
             'medium_high': '#65a30d', # Light green
             'high': '#059669'      # Emerald
         },
-        'CAM': {
+        'Mezzala': {
             'low': '#7c2d12',       # Dark red
             'medium_low': '#ea580c', # Orange
             'medium': '#d97706',    # Orange
             'medium_high': '#65a30d', # Light green
             'high': '#059669'      # Emerald
         },
-        'BoxCrasher': {
+        'ShadowStriker': {
             'low': '#7c2d12',       # Dark red
             'medium_low': '#ea580c', # Orange
             'medium': '#d97706',    # Orange
@@ -908,15 +908,15 @@ with tab2:
             'key_metrics': ['Key Passes', 'xAG', 'GCA Pass'],
             'example_players': ['Kenneth Taylor (<span style="color: #d2122e;">Ajax</span>)', 'Levi Smans (<span style="color: #0066cc;">Heerenveen</span>)', 'Luciano Valente (<span style="color: #0066cc;">Groningen</span>)']
         },
-        'CAM': {
-            'name': 'Central Attacking Midfielder (CAM)',
-            'description': 'Effective in attacking areas, shows creativity in final third, enters penalty area, effective in goals and assists.',
-            'key_metrics': ['Final 3rd', 'Pen Area', 'xAG'],
+        'Mezzala': {
+            'name': 'Mezzala (Half-space Playmaker)',
+            'description': 'Creative midfielder occupying the half-spaces, links midfield to attack with progressive carries and final-third combinations; arrives late into the box.',
+            'key_metrics': ['Passes into Final Third', 'Carries into Penalty Area', 'xAG'],
             'example_players': ['Ismael Saibari (<span style="color: #ff6600;">PSV</span>)', 'Jorg Schreuders (<span style="color: #0066cc;">Groningen</span>)', 'Mohammed Ihattaren (<span style="color: #ff0000;">RKC Waalwijk</span>)']
         },
-        'BoxCrasher': {
-            'name': 'Box Crasher (Shadow Striker)',
-            'description': 'Enters penalty area, takes shots, effective in scoring goals, shows striker-like characteristics as a midfielder.',
+        'ShadowStriker': {
+            'name': 'Shadow Striker (Second Striker)',
+            'description': 'Attacking-minded midfielder attacking the box aggressively; prioritizes shot volume and goal threat with striker-like instincts from deeper positions.',
             'key_metrics': ['xG', 'Shots', 'Goals'],
             'example_players': ['Ismael Saibari (<span style="color: #ff6600;">PSV</span>)', 'Leo Sauer (<span style="color: #ff6600;">NAC Breda</span>)', 'Sem Steijn (<span style="color: #ff0000;">Twente</span>)']
         }
@@ -1163,11 +1163,24 @@ with tab3:
                         """, unsafe_allow_html=True)
                         
                         
-                        # Archetype section
-                        st.markdown(f"""
+                        # Archetype section + Secondary (if exists)
+                        secondary_arch = player.get('Secondary_Archetype', None)
+                        secondary_score_val = player.get('Secondary_Archetype_Score', None)
+                        secondary_html = ""
+                        if isinstance(secondary_arch, str) and len(secondary_arch.strip()) > 0 and secondary_arch != 'N/A':
+                            secondary_color = get_archetype_color(secondary_arch)
+                            # Güvenli sayı formatlama
+                            try:
+                                sec_score_txt = f", {float(secondary_score_val):.0f}" if secondary_score_val is not None and not pd.isna(secondary_score_val) else ""
+                            except Exception:
+                                sec_score_txt = ""
+                            secondary_html = f"<div style='color: #6b7280; font-size: 0.72rem; font-weight: 500; margin-top: 0.4rem;'>Secondary: <span style='color: {secondary_color}; font-weight: 700;'>{secondary_arch}</span>{sec_score_txt}</div>"
+
+                        st.markdown(
+                            f"""
                             <div style='margin-top: 0.8rem; padding: 0.6rem; 
                                         background: linear-gradient(135deg, {get_archetype_color(primary_archetype)}15, {get_archetype_color(primary_archetype)}05);
-                                        border-radius: 5px; text-align: center;'>
+                                        border-radius: 5px; text-align: center; min-height: 120px;'>
                                 <div style='color: #6b7280; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.4rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.2rem; display: inline-block;'>
                                     Archetype
                                 </div>
@@ -1176,10 +1189,13 @@ with tab3:
                                     {primary_archetype}
                                 </div>
                                 <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
-                                   Archetype Score: {archetype_score:.1f}
+                                   Archetype Score: {archetype_score:.0f}
                                 </div>
+                            """ + secondary_html + f"""
                             </div>
-                        """, unsafe_allow_html=True)
+                            """,
+                            unsafe_allow_html=True,
+                        )
                         
                         # Performance stats - Dynamic based on archetype
                         archetype = str(primary_archetype).strip()
@@ -1203,11 +1219,11 @@ with tab3:
                             metric1_label, metric1_value = "Key Passes", player['pass_KP']
                             metric2_label, metric2_value = "xAG", player['std_xAG']
                             metric3_label, metric3_value = "GCA Pass", player['gca_PassLive']
-                        elif archetype == 'CAM':
+                        elif archetype == 'Mezzala':
                             metric1_label, metric1_value = "Final 3rd", player['poss_1/3']
                             metric2_label, metric2_value = "Pen Area", player['poss_CPA']
                             metric3_label, metric3_value = "xAG", player['std_xAG']
-                        elif archetype == 'BoxCrasher':
+                        elif archetype == 'ShadowStriker':
                             metric1_label, metric1_value = "xG", player['std_xG']
                             metric2_label, metric2_value = "Shots", player['shoot_Sh']
                             metric3_label, metric3_value = "Goals", player['std_Gls']
@@ -1223,15 +1239,15 @@ with tab3:
                                 <div style='display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; font-size: 0.75rem; text-align: center;'>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric1_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric1_value, archetype)};'>{metric1_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric1_value, archetype)};'>{metric1_value:.0f}</div>
                                     </div>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric2_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric2_value, archetype)};'>{metric2_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric2_value, archetype)};'>{metric2_value:.0f}</div>
                                     </div>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric3_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric3_value, archetype)};'>{metric3_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric3_value, archetype)};'>{metric3_value:.0f}</div>
                                     </div>
                                 </div>
                             </div>
@@ -1240,6 +1256,98 @@ with tab3:
                         st.markdown("<br>", unsafe_allow_html=True)
         
         st.divider()
+
+    # ---------------------------------
+    # Top 3 Players by Archetype (New)
+    # ---------------------------------
+    st.markdown("### Top 3 Players by Archetype")
+    st.markdown("Filtrelere göre her arketipin en iyi 3 oyuncusu")
+
+    if 'Primary_Archetype' in df_filtered.columns:
+        archetypes = [
+            'Anchor','DLP','BallWinner','BoxToBox','APM','Mezzala','ShadowStriker'
+        ]
+
+        for arch in archetypes:
+            arch_df = df_filtered[df_filtered['Primary_Archetype'] == arch]
+            if arch_df.empty:
+                continue
+
+            score_col = 'Archetype_Score' if 'Archetype_Score' in arch_df.columns else None
+            if score_col:
+                arch_top = arch_df.sort_values(score_col, ascending=False).head(3)
+            else:
+                arch_top = arch_df.sort_values('std_Min', ascending=False).head(3)
+
+            st.markdown(f"#### {arch} - Top 3")
+            cols = st.columns(3, gap="medium")
+            for i in range(3):
+                if i < len(arch_top):
+                    player = arch_top.iloc[i]
+                    with cols[i]:
+                        # Ensure cluster_id_int exists before using in card styles
+                        cluster_id = player.get('Cluster', None)
+                        try:
+                            cluster_id_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
+                        except Exception:
+                            cluster_id_int = None
+                        card_color = get_profile_color(cluster_id_int) if cluster_id_int is not None else '#6b7280'
+                        archetype_color = get_archetype_color(arch)
+                        player_name = player.get('Player','N/A')
+                        squad = player.get('Squad','N/A')
+                        age = player.get('Age', np.nan)
+                        score_val = float(player.get(score_col, 0)) if score_col else float(player.get('std_Min', 0))
+
+                        st.markdown(f"""
+                            <div class='player-card' style='border: 2px solid {card_color};
+                                        border-radius: 10px; padding: 1rem; 
+                                        background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                                <div style='text-align: center;'>
+                                    <div style='color: {card_color}; font-size: 0.8rem; font-weight: 600;'>
+                                        #{i + 1}
+                                    </div>
+                                    <h4 style='margin: 0.3rem 0; color: #333; font-size: 1.1rem; background: linear-gradient(135deg, {card_color}15, {card_color}08); padding: 0.3rem 0.5rem; border-radius: 4px;'>
+                                        {player_name}
+                                    </h4>
+                                    <p style='margin: 0; color: {get_team_color(squad)}; font-size: 0.85rem; background: linear-gradient(135deg, {card_color}12, {card_color}05); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;'>
+                                        {squad}
+                                    </p>
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                        age_display = 'N/A' if pd.isna(age) else f"{age:.0f}"
+                        cluster_id = player.get('Cluster', None)
+                        try:
+                            cluster_id_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
+                        except Exception:
+                            cluster_id_int = None
+                        profile_name = cluster_profiles.get(cluster_id_int, {}).get('name', 'N/A') if cluster_id_int is not None else 'N/A'
+                        profile_color = get_profile_color(cluster_id_int) if cluster_id_int is not None else '#6b7280'
+
+                        st.markdown(f"""
+                            <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; 
+                                        margin-top: 0.8rem; font-size: 0.85rem;'>
+                                <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                    <div style='color: #888; font-size: 0.7rem;'>Archetype</div>
+                                    <div style='font-weight: 600; color: {archetype_color};'>{arch}</div>
+                                </div>
+                                <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                    <div style='color: #888; font-size: 0.7rem;'>Age</div>
+                                    <div style='font-weight: 600; color: #333;'>{age_display}</div>
+                                </div>
+                                <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                    <div style='color: #888; font-size: 0.7rem;'>Profile</div>
+                                    <div style='font-weight: 600; color: {profile_color};'>{'' if cluster_id_int is None else cluster_id_int}: {profile_name}</div>
+                                </div>
+                                <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                    <div style='color: #888; font-size: 0.7rem;'>{'Archetype Score' if score_col else 'Minutes'}</div>
+                                    <div style='font-weight: 600; color: {get_rating_color(score_val if score_col else min(score_val/20, 100))};'>
+                                        {score_val:.1f}
+                                    </div>
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
 
 with tab4:
     st.markdown("### Player Analysis & Comparison")
@@ -1382,11 +1490,23 @@ with tab4:
                         """, unsafe_allow_html=True)
                         
                         
-                        # Archetype section
-                        st.markdown(f"""
+                        # Archetype section + Secondary (if exists)
+                        secondary_arch_sel = player.get('Secondary_Archetype', None)
+                        secondary_score_sel = player.get('Secondary_Archetype_Score', None)
+                        secondary_html_sel = ""
+                        if isinstance(secondary_arch_sel, str) and len(secondary_arch_sel.strip()) > 0 and secondary_arch_sel != 'N/A':
+                            secondary_color_sel = get_archetype_color(secondary_arch_sel)
+                            try:
+                                sec_score_txt_sel = f", {float(secondary_score_sel):.0f}" if secondary_score_sel is not None and not pd.isna(secondary_score_sel) else ""
+                            except Exception:
+                                sec_score_txt_sel = ""
+                            secondary_html_sel = f"<div style='color: #6b7280; font-size: 0.72rem; font-weight: 500; margin-top: 0.4rem;'>Secondary: <span style='color: {secondary_color_sel}; font-weight: 700;'>{secondary_arch_sel}</span>{sec_score_txt_sel}</div>"
+
+                        st.markdown(
+                            f"""
                             <div style='margin-top: 0.8rem; padding: 0.6rem; 
                                         background: linear-gradient(135deg, {get_archetype_color(primary_archetype)}15, {get_archetype_color(primary_archetype)}05);
-                                        border-radius: 5px; text-align: center;'>
+                                        border-radius: 5px; text-align: center; min-height: 120px;'>
                                 <div style='color: #6b7280; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.4rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.2rem; display: inline-block;'>
                                     Archetype
                                 </div>
@@ -1395,10 +1515,13 @@ with tab4:
                                     {primary_archetype}
                                 </div>
                                 <div style='color: #666; font-size: 0.75rem; margin-top: 0.2rem;'>
-                                   Archetype Score: {archetype_score:.1f}
+                                   Archetype Score: {archetype_score:.0f}
                                 </div>
+                            """ + secondary_html_sel + f"""
                             </div>
-                        """, unsafe_allow_html=True)
+                            """,
+                            unsafe_allow_html=True,
+                        )
                         
                         # Performance stats - Dynamic based on archetype
                         archetype = str(primary_archetype).strip()
@@ -1422,11 +1545,11 @@ with tab4:
                             metric1_label, metric1_value = "Key Passes", player['pass_KP']
                             metric2_label, metric2_value = "xAG", player['std_xAG']
                             metric3_label, metric3_value = "GCA Pass", player['gca_PassLive']
-                        elif archetype == 'CAM':
+                        elif archetype == 'Mezzala':
                             metric1_label, metric1_value = "Final 3rd", player['poss_1/3']
                             metric2_label, metric2_value = "Pen Area", player['poss_CPA']
                             metric3_label, metric3_value = "xAG", player['std_xAG']
-                        elif archetype == 'BoxCrasher':
+                        elif archetype == 'ShadowStriker':
                             metric1_label, metric1_value = "xG", player['std_xG']
                             metric2_label, metric2_value = "Shots", player['shoot_Sh']
                             metric3_label, metric3_value = "Goals", player['std_Gls']
@@ -1442,15 +1565,15 @@ with tab4:
                                 <div style='display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; font-size: 0.75rem; text-align: center;'>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric1_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric1_value, archetype)};'>{metric1_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric1_value, archetype)};'>{metric1_value:.0f}</div>
                                     </div>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric2_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric2_value, archetype)};'>{metric2_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric2_value, archetype)};'>{metric2_value:.0f}</div>
                                     </div>
                                     <div>
                                         <div style='color: #888; font-size: 0.65rem;'>{metric3_label}</div>
-                                        <div style='font-weight: 600; color: {get_score_color(metric3_value, archetype)};'>{metric3_value:.1f}</div>
+                                        <div style='font-weight: 600; color: {get_score_color(metric3_value, archetype)};'>{metric3_value:.0f}</div>
                                     </div>
                                 </div>
                             </div>
@@ -1696,19 +1819,7 @@ with tab4:
                                file_name=f"{player_name}_similar_players.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-            # PDF
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt=f"{player_name} - Similar Players", ln=True)
-            for idx, row in similar_players.iterrows():
-                line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Profile {row['Cluster']}"
-                pdf.cell(200, 10, txt=line, ln=True)
-            pdf_output = pdf.output(dest='S').encode('latin-1')
-            st.download_button(label=f"{player_name} - Download Similar Players PDF",
-                               data=pdf_output,
-                               file_name=f"{player_name}_similar_players.pdf",
-                               mime="application/pdf")
+            
         
         elif len(selected_players) > 1:
             # Comparison report for multiple players
@@ -1723,20 +1834,7 @@ with tab4:
                                file_name=f"player_comparison_{len(selected_players)}_players.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-            # PDF
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt=f"Player Comparison - {len(selected_players)} Players", ln=True)
-            pdf.ln(5)
-            for idx, row in comparison_data.iterrows():
-                line = f"{row['Player']} | {row['Pos']} | {row['Squad']} | Age: {row['Age']} | Profile: {row['Cluster']}"
-                pdf.cell(200, 10, txt=line, ln=True)
-            pdf_output = pdf.output(dest='S').encode('latin-1')
-            st.download_button(label="Selected Players Comparison - Download PDF",
-                               data=pdf_output,
-                               file_name=f"player_comparison_{len(selected_players)}_players.pdf",
-                               mime="application/pdf")
+            
 
     # Call the analysis function
     update_player_view(player_select)
