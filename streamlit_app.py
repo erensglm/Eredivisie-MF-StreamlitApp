@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -6,6 +7,9 @@ from io import BytesIO
 from fpdf import FPDF
 from sklearn.preprocessing import MinMaxScaler
 import os
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
 
 # Clean and Simple Professional Styling
 st.markdown("""
@@ -1639,10 +1643,123 @@ with tab4:
             showlegend=True, 
             title="Selected Players vs Player Profile Averages",
             template='plotly_dark', 
-            title_font=dict(size=20), 
+            title_font=dict(size=16, color='#000000'), 
             legend=dict(font=dict(size=12))
         )
-        st.plotly_chart(fig_radar, use_container_width=True)
+        
+        # Standart Stats başlığı
+        st.markdown("""
+            <h2 style='color: #2563eb; margin: 0 0 1rem 0; font-size: 1.8rem; font-weight: 700;'>
+                Standart Stats
+            </h2>
+        """, unsafe_allow_html=True)
+        
+        # Radar ve tabloyu yan yana göster
+        radar_col, table_col = st.columns([2, 1.5], gap="large")
+        with radar_col:
+            st.plotly_chart(fig_radar, use_container_width=True)
+
+        with table_col:
+            # Seçilen oyuncular için metrik info kartları (Player vs Profile Avg, 0-100)
+            st.markdown("<h4 style='margin:0 0 0.5rem 0;'>Info Cards</h4>", unsafe_allow_html=True)
+
+            def build_player_info_card(player_name_str):
+                pr = selected_rows[selected_rows["Player"] == player_name_str]
+                if pr.empty:
+                    return None
+                idx = pr.index[0]
+                player_scaled = df_scaled.loc[idx]
+                cluster_id = pr.iloc[0].get("Cluster", None)
+                try:
+                    cluster_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
+                except Exception:
+                    cluster_int = None
+                if cluster_int is None:
+                    cluster_avg = pd.Series([np.nan]*len(radar_metrics), index=radar_metrics)
+                else:
+                    cluster_avg = df_scaled[df["Cluster"] == cluster_int][radar_metrics].mean()
+
+                player_vals = (player_scaled.values * 100).astype(float)
+                profile_vals = (cluster_avg.values * 100).astype(float)
+
+                # Kart üst bilgileri
+                squad_name = pr.iloc[0].get("Squad", "N/A")
+                age_val = pr.iloc[0].get("Age", None)
+                profile_name = cluster_profiles.get(cluster_int, {}).get("name", "N/A") if cluster_int is not None else "N/A"
+                border_color = get_profile_color(cluster_int) if cluster_int is not None else '#6b7280'
+
+                # Metrik satırlarını HTML olarak kur
+                rows_html = []
+                for i, metric in enumerate(radar_metrics):
+                    metric_label = column_info.get(metric, metric)
+                    pv = 0.0 if pd.isna(player_vals[i]) else float(player_vals[i])
+                    av = 0.0 if pd.isna(profile_vals[i]) else float(profile_vals[i])
+                    row = f"""
+                    <div style='margin:0.35rem 0;'>
+                        <div style='font-size:0.75rem;color:#6b7280;margin-bottom:0.2rem;'>{metric_label}</div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:8px;background:#e9ecef;border-radius:999px;'>
+                                    <div style='height:8px;width:{pv:.0f}%;background:#2563eb;border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#2563eb;font-weight:600;'>{pv:.0f}</div>
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
+                                    <div style='height:6px;width:{av:.0f}%;background:#94a3b8;border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:#64748b;'>{av:.0f}</div>
+                        </div>
+                    </div>
+                    """
+                    rows_html.append(row)
+
+                age_text = "N/A" if age_val is None or pd.isna(age_val) else f"{float(age_val):.0f}"
+                primary_arch = pr.iloc[0].get('Primary_Archetype', 'N/A')
+                arch_color = get_archetype_color(str(primary_arch))
+                card_html = f"""
+                <div class='player-card' style='border: 2px solid {border_color}; border-radius: 10px; padding: 1rem; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.08);'>
+                    <div style='display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;justify-content:space-between;margin-bottom:0.4rem;'>
+                        <div style='display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;'>
+                            <h4 style='margin:0;color:#111827;font-size:1.0rem;'>{player_name_str}</h4>
+                            <span style='color:{get_team_color(squad_name)};font-size:0.85rem;font-weight:600;'>{squad_name}</span>
+                            <span style='color:{border_color};font-size:0.8rem;font-weight:600;'>Profile {'' if cluster_int is None else cluster_int}: {profile_name}</span>
+                        </div>
+                        <div style='font-size:0.85rem;color:#6b7280;'>
+                            Age: <span style='font-weight:700;color:#111827;'>{age_text}</span>
+                            <span style='margin:0 0.4rem;'>|</span>
+                            <span style='font-weight:700;color:{arch_color};'>{primary_arch}</span>
+                        </div>
+                    </div>
+                    <div style='display:flex;align-items:center;gap:0.75rem;margin:0.25rem 0 0.5rem 0;'>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#2563eb;font-weight:600;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:2px;'></span> Player
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#64748b;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#94a3b8;border-radius:2px;'></span> Profile Avg
+                        </div>
+                    </div>
+                    <div style='border-top:1px solid #e9ecef; margin:0.25rem 0 0.5rem 0;'></div>
+                    <div>
+                        {''.join(rows_html)}
+                    </div>
+                </div>
+                """
+                return card_html
+
+            if selected_players:
+                # 3 sütunlu satırlar halinde info kartları
+                for start in range(0, len(selected_players), 3):
+                    row_players = selected_players[start:start+3]
+                    cols = st.columns(len(row_players), gap="medium")
+                    for cidx, pname in enumerate(row_players):
+                        with cols[cidx]:
+                            card = build_player_info_card(pname)
+                            if card is not None:
+                                components.html(card, height=720, scrolling=True)
 
         # ---------------------------
         # Category-Based Radars
@@ -1657,7 +1774,11 @@ with tab4:
         }
 
         for category, cat_metrics in categories.items():
-            st.subheader(category)
+            st.markdown(f"""
+                <h2 style='color: #2563eb; margin: 0 0 1rem 0; font-size: 1.8rem; font-weight: 700;'>
+                    {category}
+                </h2>
+            """, unsafe_allow_html=True)
             cat_metrics_available = [m for m in cat_metrics if m in df.columns]
             cat_metrics_tr = [column_info[m] for m in cat_metrics_available]
             
@@ -1715,13 +1836,474 @@ with tab4:
                 showlegend=True,
                 template='plotly_dark',
                 title=f"{category} - Selected Players vs Player Profile Averages",
-                title_font=dict(size=20),
+                title_font=dict(size=16, color='#000000'),
                 legend=dict(font=dict(size=12))
             )
-            st.plotly_chart(fig_cat, use_container_width=True)
+            cat_left_col, cat_right_col = st.columns([2, 1.5], gap="large")
+            with cat_left_col:
+                st.plotly_chart(fig_cat, use_container_width=True)
+
+            # Kategori için info kartları (oyuncu vs profil ortalaması) sağda
+            with cat_right_col:
+                st.markdown("<h4 style='margin:0.25rem 0 0.5rem 0;'>Info Cards</h4>", unsafe_allow_html=True)
+
+            def build_category_info_card(player_name_str, metrics_keys, df_scaled_local):
+                pr = selected_rows[selected_rows["Player"] == player_name_str]
+                if pr.empty:
+                    return None
+                idx_local = pr.index[0]
+                player_scaled_loc = df_scaled_local.loc[idx_local]
+                cluster_id_loc = pr.iloc[0].get("Cluster", None)
+                try:
+                    cluster_int_loc = int(cluster_id_loc) if cluster_id_loc is not None and not pd.isna(cluster_id_loc) else None
+                except Exception:
+                    cluster_int_loc = None
+                if cluster_int_loc is None:
+                    cluster_avg_loc = pd.Series([np.nan]*len(metrics_keys), index=[column_info[m] for m in metrics_keys])
+                else:
+                    # df_scaled_local kolonları zaten çevrilmiş başlıkları (column_info) kullanıyor olabilir; kontrol et
+                    if list(df_scaled_local.columns) == [column_info[m] for m in metrics_keys]:
+                        cluster_avg_loc = df_scaled_local[df["Cluster"] == cluster_int_loc].mean()
+                        player_vals_series = player_scaled_loc
+                        metric_labels = list(df_scaled_local.columns)
+                    else:
+                        cluster_avg_loc = df_scaled_local[df["Cluster"] == cluster_int_loc][metrics_keys].mean()
+                        player_vals_series = player_scaled_loc[metrics_keys]
+                        metric_labels = [column_info[m] for m in metrics_keys]
+
+                # Değerleri 0-100'e çevir
+                p_vals = (player_vals_series.values * 100).astype(float)
+                a_vals = (cluster_avg_loc.values * 100).astype(float)
+
+                # Kart üst bilgileri
+                squad_name_loc = pr.iloc[0].get("Squad", "N/A")
+                age_val_loc = pr.iloc[0].get("Age", None)
+                age_text_loc = "N/A" if age_val_loc is None or pd.isna(age_val_loc) else f"{float(age_val_loc):.0f}"
+                primary_arch_loc = pr.iloc[0].get('Primary_Archetype', 'N/A')
+                arch_color_loc = get_archetype_color(str(primary_arch_loc))
+                profile_name_loc = cluster_profiles.get(cluster_int_loc, {}).get("name", "N/A") if cluster_int_loc is not None else "N/A"
+                border_color_loc = get_profile_color(cluster_int_loc) if cluster_int_loc is not None else '#6b7280'
+
+                rows_html_loc = []
+                for i, metric_label in enumerate(metric_labels):
+                    pv = 0.0 if pd.isna(p_vals[i]) else float(p_vals[i])
+                    av = 0.0 if pd.isna(a_vals[i]) else float(a_vals[i])
+                    row = f"""
+                    <div style='margin:0.3rem 0;'>
+                        <div style='font-size:0.75rem;color:#6b7280;margin-bottom:0.15rem;'>{metric_label}</div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:8px;background:#e9ecef;border-radius:999px;'>
+                                    <div style='height:8px;width:{pv:.0f}%;background:#2563eb;border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#2563eb;font-weight:600;'>{pv:.0f}</div>
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.15rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
+                                    <div style='height:6px;width:{av:.0f}%;background:#94a3b8;border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:#64748b;'>{av:.0f}</div>
+                        </div>
+                    </div>
+                    """
+                    rows_html_loc.append(row)
+
+                card_html_loc = f"""
+                <div class='player-card' style='border: 2px solid {border_color_loc}; border-radius: 10px; padding: 1rem; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.08);'>
+                    <div style='display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;justify-content:space-between;margin-bottom:0.4rem;'>
+                        <div style='display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;'>
+                            <h4 style='margin:0;color:#111827;font-size:1.0rem;'>{player_name_str}</h4>
+                            <span style='color:{get_team_color(squad_name_loc)};font-size:0.85rem;font-weight:600;'>{squad_name_loc}</span>
+                            <span style='color:{border_color_loc};font-size:0.8rem;font-weight:600;'>Profile {'' if cluster_int_loc is None else cluster_int_loc}: {profile_name_loc}</span>
+                        </div>
+                        <div style='font-size:0.85rem;color:#6b7280;'>
+                            Age: <span style='font-weight:700;color:#111827;'>{age_text_loc}</span>
+                            <span style='margin:0 0.4rem;'>|</span>
+                            <span style='font-weight:700;color:{arch_color_loc};'>{primary_arch_loc}</span>
+                        </div>
+                    </div>
+                    <div style='display:flex;align-items:center;gap:0.75rem;margin:0.25rem 0 0.5rem 0;'>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#2563eb;font-weight:600;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:2px;'></span> Player
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#64748b;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#94a3b8;border-radius:2px;'></span> Profile Avg
+                        </div>
+                    </div>
+                    <div style='border-top:1px solid #e9ecef; margin:0.25rem 0 0.5rem 0;'></div>
+                    <div>
+                        {''.join(rows_html_loc)}
+                    </div>
+                </div>
+                """
+                return card_html_loc
+
+            if selected_players and cat_metrics_available:
+                for start_idx in range(0, len(selected_players), 3):
+                    row_players_loc = selected_players[start_idx:start_idx+3]
+                    cols_loc = cat_right_col.columns(len(row_players_loc), gap="medium")
+                    for cc, pname_loc in enumerate(row_players_loc):
+                        with cols_loc[cc]:
+                            card_loc = build_category_info_card(pname_loc, cat_metrics_available, df_cat_scaled)
+                            if card_loc is not None:
+                                components.html(card_loc, height=640, scrolling=True)
 
             
 
+        # ---------------------------
+        # Archetype Score Distribution (Before Similar Players)
+        # ---------------------------
+        st.markdown("""
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
+                    Archetype Distribution Chart
+                </h2>
+                <p style='color:#6b7280; margin:0.25rem 0 0 0; font-size:0.9rem;'>
+                    A comparative view of the selected players' scores in the 7 archetypes. The primary archetype bar is highlighted with a star and a bold border.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        archetypes_full = ['Anchor','DLP','BallWinner','BoxToBox','APM','Mezzala','ShadowStriker']
+        arch_to_col = {a: f"{a}_Score" for a in archetypes_full}
+
+        if selected_players:
+            fig_arch = go.Figure()
+            for idx_p, player_name in enumerate(selected_players):
+                prow = selected_rows[selected_rows["Player"] == player_name]
+                if prow.empty:
+                    continue
+                prow = prow.iloc[0]
+                # Y ekseni değerleri
+                y_vals = []
+                for a in archetypes_full:
+                    coln = arch_to_col[a]
+                    y_vals.append(float(prow.get(coln, np.nan)))
+                # Renkler arketip rengi
+                colors = [get_archetype_color(a) for a in archetypes_full]
+                # Primary vurgusu: kalın kenarlık ve yıldız texti
+                primary_arch = str(prow.get('Primary_Archetype', ''))
+                marker_line_width = [2 if a == primary_arch else 0 for a in archetypes_full]
+                marker_line_color = ["#111827" if a == primary_arch else "rgba(0,0,0,0)" for a in archetypes_full]
+                # Oyuncu ismi (sadece ilk isim)
+                full_name = str(prow.get('Player', ''))
+                first_name = full_name.split(' ')[0] if full_name else ''
+                text_labels = [f"{first_name}★" if a == primary_arch else first_name for a in archetypes_full]
+
+                fig_arch.add_trace(go.Bar(
+                    name=player_name,
+                    x=archetypes_full,
+                    y=y_vals,
+                    marker=dict(color=colors, line=dict(width=marker_line_width, color=marker_line_color)),
+                    text=text_labels,
+                    textposition='outside',
+                    cliponaxis=False
+                ))
+
+            fig_arch.update_layout(
+                barmode='group',
+                template='plotly_dark',
+                yaxis=dict(title='Score (0-100)', rangemode='tozero'),
+                xaxis=dict(title='Archetype'),
+                legend=dict(font=dict(size=12)),
+                showlegend=False
+            )
+            st.plotly_chart(fig_arch, use_container_width=True)
+
+        # ---------------------------
+        # Interactive Scatter Plot
+        # ---------------------------
+        st.markdown("""
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
+                    Interactive Player Comparison
+                </h2>
+                <p style='color:#6b7280; margin:0.25rem 0 0 0; font-size:0.9rem;'>
+                    Comparative analysis of selected players with other players. Choose your desired metrics on X and Y axes.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Metrik seçimi için dropdown'lar
+        available_metrics = {
+            'pass_PrgP': 'Progressive Passes',
+            'poss_PrgC': 'Progressive Carries', 
+            'std_xAG': 'Expected Assists (xAG)',
+            'std_xG': 'Expected Goals (xG)',
+            'def_Tkl': 'Tackles',
+            'def_Int': 'Interceptions',
+            'pass_KP': 'Key Passes',
+            'shoot_Sh': 'Total Shots',
+            'misc_Recov': 'Ball Recoveries',
+            'pass_1/3': 'Passes into Final Third'
+        }
+
+        col_x, col_y = st.columns(2, gap="medium")
+        with col_x:
+            x_metric = st.selectbox(
+                "X Axis Metric",
+                options=list(available_metrics.keys()),
+                format_func=lambda x: available_metrics[x],
+                index=0,
+                help="Select metric for X axis"
+            )
+        with col_y:
+            y_metric = st.selectbox(
+                "Y Axis Metric", 
+                options=list(available_metrics.keys()),
+                format_func=lambda x: available_metrics[x],
+                index=2,
+                help="Select metric for Y axis"
+            )
+
+        if selected_players and x_metric in df.columns and y_metric in df.columns:
+            # Seçilen oyuncular ve diğer oyuncular
+            selected_df = df[df['Player'].isin(selected_players)].copy()
+            other_df = df[~df['Player'].isin(selected_players)].copy()
+            
+            # Scatter plot oluştur
+            fig_scatter = go.Figure()
+            
+            # Diğer oyuncular (arka plan)
+            if not other_df.empty:
+                fig_scatter.add_trace(go.Scatter(
+                    x=other_df[x_metric],
+                    y=other_df[y_metric],
+                    mode='markers',
+                    name='Other Players',
+                    marker=dict(
+                        color='lightgray',
+                        size=8,
+                        opacity=0.6,
+                        line=dict(width=1, color='white')
+                    ),
+                    text=other_df['Player'],
+                    hovertemplate='<b>%{text}</b><br>' +
+                                 f'{available_metrics[x_metric]}: %{{x:.2f}}<br>' +
+                                 f'{available_metrics[y_metric]}: %{{y:.2f}}<br>' +
+                                 '<extra></extra>'
+                ))
+            
+            # Seçilen oyuncular (vurgulanmış) - Jitter ile üst üste gelme sorunu çözümü
+            import random
+            random.seed(42)  # Tutarlı jitter için
+            
+            # Aynı pozisyondaki oyuncuları grupla
+            position_groups = {}
+            for player_name in selected_players:
+                player_data = selected_df[selected_df['Player'] == player_name]
+                if not player_data.empty:
+                    player_row = player_data.iloc[0]
+                    x_val = player_row[x_metric]
+                    y_val = player_row[y_metric]
+                    pos_key = f"{x_val:.3f}_{y_val:.3f}"
+                    
+                    if pos_key not in position_groups:
+                        position_groups[pos_key] = []
+                    position_groups[pos_key].append((player_name, player_row))
+            
+            # Her pozisyon grubu için jitter uygula
+            for pos_key, players_at_pos in position_groups.items():
+                base_x, base_y = pos_key.split('_')
+                base_x, base_y = float(base_x), float(base_y)
+                
+                # Jitter miktarı (metrik değerlerine göre ayarlanmış)
+                x_range = other_df[x_metric].max() - other_df[x_metric].min() if not other_df.empty else 1
+                y_range = other_df[y_metric].max() - other_df[y_metric].min() if not other_df.empty else 1
+                jitter_x = x_range * 0.02  # %2 jitter
+                jitter_y = y_range * 0.02
+                
+                for i, (player_name, player_row) in enumerate(players_at_pos):
+                    # Jitter hesapla (dairesel dağılım)
+                    if len(players_at_pos) > 1:
+                        angle = (2 * np.pi * i) / len(players_at_pos)
+                        jitter_offset_x = jitter_x * np.cos(angle)
+                        jitter_offset_y = jitter_y * np.sin(angle)
+                    else:
+                        jitter_offset_x = jitter_offset_y = 0
+                    
+                    # Oyuncu rengi (profil rengi)
+                    cluster_id = player_row.get('Cluster', None)
+                    try:
+                        cluster_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
+                    except Exception:
+                        cluster_int = None
+                    player_color = get_profile_color(cluster_int) if cluster_int is not None else '#dc2626'
+                    
+                    # Hover metni (çoklu oyuncu uyarısı)
+                    if len(players_at_pos) > 1:
+                        hover_text = f"<b>{player_name}</b><br>⚠️ Multiple players at this position<br>" + \
+                                   f'{available_metrics[x_metric]}: {base_x:.2f}<br>' + \
+                                   f'{available_metrics[y_metric]}: {base_y:.2f}<br>'
+                    else:
+                        hover_text = f"<b>{player_name}</b><br>" + \
+                                   f'{available_metrics[x_metric]}: {base_x:.2f}<br>' + \
+                                   f'{available_metrics[y_metric]}: {base_y:.2f}<br>'
+                    
+                    fig_scatter.add_trace(go.Scatter(
+                        x=[base_x + jitter_offset_x],
+                        y=[base_y + jitter_offset_y],
+                        mode='markers',
+                        name=player_name,
+                        marker=dict(
+                            color=player_color,
+                            size=20,  # Boyut artırıldı
+                            symbol='star',
+                            line=dict(width=3, color='white')
+                        ),
+                        text=[player_name],
+                        hovertemplate=hover_text + '<extra></extra>'
+                    ))
+            
+            # Grafik düzenleme
+            fig_scatter.update_layout(
+                title=f"Player Comparison: {available_metrics[y_metric]} vs {available_metrics[x_metric]}",
+                xaxis_title=available_metrics[x_metric],
+                yaxis_title=available_metrics[y_metric],
+                template='plotly_dark',
+                height=500,
+                hovermode='closest',
+                legend=dict(font=dict(size=12))
+            )
+            
+            st.plotly_chart(fig_scatter, use_container_width=True)
+
+        # ---------------------------
+        # Defansif Aktivite Haritası
+        # ---------------------------
+        st.markdown("""
+            <div style='margin: 3rem 0 1.5rem 0;'>
+                <h2 style='font-size: 2rem; font-weight: 800; color: #2563eb;'>
+                    Defensive Activity Map
+                </h2>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Defansif aktivite haritası oluşturma
+        
+        # Haritaları 2'şer yan yana göster
+        if len(selected_players) > 0:
+            # İki sütunlu layout
+            cols = st.columns(2)
+            
+            for i, player_name in enumerate(selected_players):
+                col_index = i % 2
+                with cols[col_index]:
+                    player_row = selected_rows[selected_rows["Player"] == player_name]
+                    if not player_row.empty:
+                        st.markdown(f"""
+                            <h3 style='color: #000000; margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: 600;'>
+                                {player_name}
+                            </h3>
+                        """, unsafe_allow_html=True)
+                        
+                        # Defansif aktivite verilerini al
+                        def_def = player_row['def_Def 3rd'].iloc[0]
+                        def_mid = player_row['def_Mid 3rd'].iloc[0]
+                        def_att = player_row['def_Att 3rd'].iloc[0]
+                        
+                        # Bölgeleri ve değerlerini sözlük olarak sakla
+                        defensive_actions = {
+                            'DEF': def_def,
+                            'MID': def_mid,
+                            'ATT': def_att
+                        }
+                        
+                        # Değerlere göre büyükten küçüğe sırala
+                        sorted_actions = dict(sorted(defensive_actions.items(), key=lambda x: x[1], reverse=True))
+                        
+                        # Renkleri tanımla
+                        colors = ['green', 'yellow', 'red']
+                        color_map = {}
+                        
+                        # Sıralanmış bölgelere renkleri ata
+                        for j, (region, value) in enumerate(sorted_actions.items()):
+                            color_map[region] = colors[j]
+                        
+                        # Matplotlib figürü oluştur - kompakt ve 2'şer yan yana
+                        plt.style.use('default')
+                        fig, ax = plt.subplots(figsize=(6, 4))
+                        fig.patch.set_facecolor('#ffffff')
+                        ax.set_facecolor('#ffffff')
+                        
+                        # Futbol sahası arka planını yükle
+                        try:
+                            pitch_img = Image.open('pitch.png')
+                            # Görseli 1/4 oranında küçült ve ortala
+                            ax.imshow(pitch_img, extent=[25, 75, 25, 75], aspect='auto')
+                        except FileNotFoundError:
+                            # Eğer pitch.png bulunamazsa, basit bir saha çiz
+                            ax.set_xlim(0, 100)
+                            ax.set_ylim(0, 100)
+                            ax.add_patch(patches.Rectangle((0, 0), 100, 100, linewidth=2, edgecolor='white', facecolor='green', alpha=0.3))
+                            # Saha çizgileri
+                            ax.plot([0, 100], [50, 50], 'w-', linewidth=2)
+                            ax.plot([16.5, 16.5], [21, 79], 'w-', linewidth=2)
+                            ax.plot([83.5, 83.5], [21, 79], 'w-', linewidth=2)
+                            ax.plot([0, 0], [0, 100], 'w-', linewidth=2)
+                            ax.plot([100, 100], [0, 100], 'w-', linewidth=2)
+                        
+                        # Bölgeleri çiz (pitch 25-75 aralığında olduğu için koordinatları ayarla)
+                        regions = {
+                            'DEF': (25, 25, 16.67, 50),      # Sol üçte birlik
+                            'MID': (41.67, 25, 16.67, 50),   # Orta üçte birlik  
+                            'ATT': (58.33, 25, 16.67, 50)    # Sağ üçte birlik
+                        }
+                        
+                        for region, (x, y, width, height) in regions.items():
+                            color = color_map[region]
+                            value = defensive_actions[region]
+                            
+                            # Yarı saydam dikdörtgen ekle
+                            rect = patches.Rectangle((x, y), width, height, 
+                                                   facecolor=color, alpha=0.6, 
+                                                   edgecolor='black', linewidth=2)
+                            ax.add_patch(rect)
+                            
+                            # Bölge adı ve değeri ekle - Streamlit tema uyumlu
+                            center_x = x + width/2
+                            center_y = y + height/2
+                            ax.text(center_x, center_y + 6, region, 
+                                   fontsize=11, fontweight='600', ha='center', va='center',
+                                   color='#1f2937', fontfamily='Inter, sans-serif',
+                                   bbox=dict(boxstyle="round,pad=0.3", facecolor='#ffffff', alpha=0.95, 
+                                            edgecolor='#e5e7eb', linewidth=1))
+                            ax.text(center_x, center_y - 6, f'{int(value)}', 
+                                   fontsize=9, fontweight='700', ha='center', va='center',
+                                   color='#6b7280', fontfamily='Inter, sans-serif',
+                                   bbox=dict(boxstyle="round,pad=0.2", facecolor='#f9fafb', alpha=1.0, 
+                                            edgecolor='#d1d5db', linewidth=0.5))
+                        
+                        # Grafiği temizle
+                        ax.set_xlim(0, 100)
+                        ax.set_ylim(0, 100)
+                        ax.axis('off')
+                        
+                        # Başlık ekle - tema uyumlu
+                        fig.suptitle(f'{player_name} - Defensive Activity Distribution', 
+                                   fontsize=12, fontweight='700', y=0.80, 
+                                   fontfamily='Inter, sans-serif', color='#2563eb')
+                        
+                        # Renk açıklaması ekle - açıklayıcı
+                        legend_text = ""
+                        for k, (region, color) in enumerate(color_map.items()):
+                            if k > 0:
+                                legend_text += " | "
+                            legend_text += f"{region} Zone ({defensive_actions[region]} actions)"
+                        
+                        ax.text(50, 12, legend_text, fontsize=8, va='center', ha='center',
+                               fontfamily='Inter, sans-serif', fontweight='500', color='#374151',
+                               bbox=dict(boxstyle="round,pad=0.3", facecolor='#ffffff', 
+                                        alpha=0.95, edgecolor='#e5e7eb', linewidth=1))
+                        
+                        # Boşlukları optimize et - kompakt
+                        plt.subplots_adjust(top=0.90, bottom=0.20, left=0.05, right=0.95)
+                        st.pyplot(fig, use_container_width=True)
+                        plt.close()
+        
         # ---------------------------
         # Similar Players
         # ---------------------------
@@ -1788,7 +2370,7 @@ with tab4:
         st.plotly_chart(fig_all, use_container_width=True, key="all_clusters_radar")
 
         # ---------------------------
-        # PDF / Excel Report
+        # / Excel Report
         # ---------------------------
         st.markdown("""
             <div style='margin: 3rem 0 1.5rem 0;'>
