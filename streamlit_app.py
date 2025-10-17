@@ -10,6 +10,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from PIL import Image
+import matplotlib as mpl
 
 # Clean and Simple Professional Styling
 st.markdown("""
@@ -276,6 +277,9 @@ else:
     st.stop()
 df = df.dropna(how='all')  # Clean empty rows
 
+# Matplotlib default font (avoid missing 'Inter' warnings)
+mpl.rcParams['font.family'] = 'DejaVu Sans'
+
 # ---------------------------
 # GLOBAL HELPER FUNCTIONS
 # ---------------------------
@@ -298,8 +302,8 @@ def get_archetype_color(archetype):
     archetype_colors = {
         'Anchor': '#dc2626',      # Red
         'DLP': '#ea580c',        # Orange
-        'BallWinner': '#d97706',  # Yellow
-        'BoxToBox': '#16a34a',   # Green
+        'BallWinner': '#1e3a8a',  # Navy (Lacivert)
+        'BoxToBox': '#facc15',   # Lighter Yellow
         'APM': '#059669',        # Teal
         'Mezzala': '#2563eb',        # Blue (moved from CAM)
         'ShadowStriker': '#7c3aed'  # Purple (was BoxCrasher)
@@ -333,7 +337,7 @@ def get_team_color(team_name):
 def get_profile_color(profile_id):
     profile_colors = {
         0: '#1E88E5',  # Blue for Elite Creative
-        1: '#43A047',  # Green for Developing
+        1: '#ec4899',  # Pink for Developing
         2: '#FB8C00'   # Orange for Defensive Engines
     }
     return profile_colors.get(profile_id, '#6b7280')  # Default gray
@@ -1678,9 +1682,18 @@ with tab4:
                     cluster_avg = pd.Series([np.nan]*len(radar_metrics), index=radar_metrics)
                 else:
                     cluster_avg = df_scaled[df["Cluster"] == cluster_int][radar_metrics].mean()
+                # Archetype average (Primary_Archetype)
+                primary_arch = pr.iloc[0].get('Primary_Archetype', None)
+                if primary_arch is None or pd.isna(primary_arch):
+                    archetype_avg = pd.Series([np.nan]*len(radar_metrics), index=radar_metrics)
+                else:
+                    archetype_avg = df_scaled[df['Primary_Archetype'] == primary_arch][radar_metrics].mean()
+                # Archetype color (for bars and legend)
+                arch_color = get_archetype_color(str(primary_arch)) if primary_arch is not None and not pd.isna(primary_arch) else '#6b7280'
 
                 player_vals = (player_scaled.values * 100).astype(float)
                 profile_vals = (cluster_avg.values * 100).astype(float)
+                archetype_vals = (archetype_avg.values * 100).astype(float)
 
                 # Kart üst bilgileri
                 squad_name = pr.iloc[0].get("Squad", "N/A")
@@ -1688,30 +1701,39 @@ with tab4:
                 profile_name = cluster_profiles.get(cluster_int, {}).get("name", "N/A") if cluster_int is not None else "N/A"
                 border_color = get_profile_color(cluster_int) if cluster_int is not None else '#6b7280'
 
-                # Metrik satırlarını HTML olarak kur
+                # Metrik satırlarını HTML olarak kur (Player vs Profile Avg vs Archetype Avg)
                 rows_html = []
                 for i, metric in enumerate(radar_metrics):
                     metric_label = column_info.get(metric, metric)
                     pv = 0.0 if pd.isna(player_vals[i]) else float(player_vals[i])
                     av = 0.0 if pd.isna(profile_vals[i]) else float(profile_vals[i])
+                    aav = 0.0 if pd.isna(archetype_vals[i]) else float(archetype_vals[i])
                     row = f"""
                     <div style='margin:0.35rem 0;'>
                         <div style='font-size:0.75rem;color:#6b7280;margin-bottom:0.2rem;'>{metric_label}</div>
                         <div style='display:flex;align-items:center;gap:0.5rem;'>
                             <div style='flex:1;'>
                                 <div style='height:8px;background:#e9ecef;border-radius:999px;'>
-                                    <div style='height:8px;width:{pv:.0f}%;background:#2563eb;border-radius:999px;'></div>
+                                    <div style='height:8px;width:{pv:.0f}%;background:#000000;border-radius:999px;'></div>
                                 </div>
                             </div>
-                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#2563eb;font-weight:600;'>{pv:.0f}</div>
+                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#000000;font-weight:600;'>{pv:.0f}</div>
                         </div>
                         <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.2rem;'>
                             <div style='flex:1;'>
                                 <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
-                                    <div style='height:6px;width:{av:.0f}%;background:#94a3b8;border-radius:999px;'></div>
+                                    <div style='height:6px;width:{av:.0f}%;background:{border_color};border-radius:999px;'></div>
                                 </div>
                             </div>
-                            <div style='width:42px;text-align:right;font-size:0.72rem;color:#64748b;'>{av:.0f}</div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:{border_color};'>{av:.0f}</div>
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.15rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
+                                    <div style='height:6px;width:{aav:.0f}%;background:{arch_color};border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:{arch_color};'>{aav:.0f}</div>
                         </div>
                     </div>
                     """
@@ -1719,7 +1741,6 @@ with tab4:
 
                 age_text = "N/A" if age_val is None or pd.isna(age_val) else f"{float(age_val):.0f}"
                 primary_arch = pr.iloc[0].get('Primary_Archetype', 'N/A')
-                arch_color = get_archetype_color(str(primary_arch))
                 card_html = f"""
                 <div class='player-card' style='border: 2px solid {border_color}; border-radius: 10px; padding: 1rem; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.08);'>
                     <div style='display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;justify-content:space-between;margin-bottom:0.4rem;'>
@@ -1735,11 +1756,14 @@ with tab4:
                         </div>
                     </div>
                     <div style='display:flex;align-items:center;gap:0.75rem;margin:0.25rem 0 0.5rem 0;'>
-                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#2563eb;font-weight:600;'>
-                            <span style='display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:2px;'></span> Player
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#000000;font-weight:600;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#000000;border-radius:2px;'></span> Player
                         </div>
-                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#64748b;'>
-                            <span style='display:inline-block;width:10px;height:10px;background:#94a3b8;border-radius:2px;'></span> Profile Avg
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:{border_color};'>
+                            <span style='display:inline-block;width:10px;height:10px;background:{border_color};border-radius:2px;'></span> Profile Avg
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:{arch_color};'>
+                            <span style='display:inline-block;width:10px;height:10px;background:{arch_color};border-radius:2px;'></span> Arc. Avg
                         </div>
                     </div>
                     <div style='border-top:1px solid #e9ecef; margin:0.25rem 0 0.5rem 0;'></div>
@@ -1871,9 +1895,22 @@ with tab4:
                         player_vals_series = player_scaled_loc[metrics_keys]
                         metric_labels = [column_info[m] for m in metrics_keys]
 
+                # Archetype avg for current category
+                primary_arch_cur = pr.iloc[0].get('Primary_Archetype', None)
+                arch_color_rows = get_archetype_color(str(primary_arch_cur)) if primary_arch_cur is not None and not pd.isna(primary_arch_cur) else '#6b7280'
+                if primary_arch_cur is None or pd.isna(primary_arch_cur):
+                    archetype_avg_loc = pd.Series([np.nan]*len(metric_labels), index=metric_labels)
+                else:
+                    mask_arch = (df['Primary_Archetype'] == primary_arch_cur)
+                    if list(df_scaled_local.columns) == metric_labels:
+                        archetype_avg_loc = df_scaled_local[mask_arch].mean()
+                    else:
+                        archetype_avg_loc = df_scaled_local.loc[mask_arch, metrics_keys].mean()
+
                 # Değerleri 0-100'e çevir
                 p_vals = (player_vals_series.values * 100).astype(float)
                 a_vals = (cluster_avg_loc.values * 100).astype(float)
+                aa_vals = (archetype_avg_loc.values * 100).astype(float)
 
                 # Kart üst bilgileri
                 squad_name_loc = pr.iloc[0].get("Squad", "N/A")
@@ -1888,24 +1925,33 @@ with tab4:
                 for i, metric_label in enumerate(metric_labels):
                     pv = 0.0 if pd.isna(p_vals[i]) else float(p_vals[i])
                     av = 0.0 if pd.isna(a_vals[i]) else float(a_vals[i])
+                    aav = 0.0 if pd.isna(aa_vals[i]) else float(aa_vals[i])
                     row = f"""
                     <div style='margin:0.3rem 0;'>
                         <div style='font-size:0.75rem;color:#6b7280;margin-bottom:0.15rem;'>{metric_label}</div>
                         <div style='display:flex;align-items:center;gap:0.5rem;'>
                             <div style='flex:1;'>
                                 <div style='height:8px;background:#e9ecef;border-radius:999px;'>
-                                    <div style='height:8px;width:{pv:.0f}%;background:#2563eb;border-radius:999px;'></div>
+                                    <div style='height:8px;width:{pv:.0f}%;background:#000000;border-radius:999px;'></div>
                                 </div>
                             </div>
-                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#2563eb;font-weight:600;'>{pv:.0f}</div>
+                            <div style='width:42px;text-align:right;font-size:0.75rem;color:#000000;font-weight:600;'>{pv:.0f}</div>
                         </div>
                         <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.15rem;'>
                             <div style='flex:1;'>
                                 <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
-                                    <div style='height:6px;width:{av:.0f}%;background:#94a3b8;border-radius:999px;'></div>
+                                    <div style='height:6px;width:{av:.0f}%;background:{border_color_loc};border-radius:999px;'></div>
                                 </div>
                             </div>
-                            <div style='width:42px;text-align:right;font-size:0.72rem;color:#64748b;'>{av:.0f}</div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:{border_color_loc};'>{av:.0f}</div>
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.5rem;margin-top:0.12rem;'>
+                            <div style='flex:1;'>
+                                <div style='height:6px;background:#f1f5f9;border-radius:999px;'>
+                                    <div style='height:6px;width:{aav:.0f}%;background:{arch_color_rows};border-radius:999px;'></div>
+                                </div>
+                            </div>
+                            <div style='width:42px;text-align:right;font-size:0.72rem;color:{arch_color_rows};'>{aav:.0f}</div>
                         </div>
                     </div>
                     """
@@ -1926,11 +1972,14 @@ with tab4:
                         </div>
                     </div>
                     <div style='display:flex;align-items:center;gap:0.75rem;margin:0.25rem 0 0.5rem 0;'>
-                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#2563eb;font-weight:600;'>
-                            <span style='display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:2px;'></span> Player
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#000000;font-weight:600;'>
+                            <span style='display:inline-block;width:10px;height:10px;background:#000000;border-radius:2px;'></span> Player
                         </div>
-                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#64748b;'>
-                            <span style='display:inline-block;width:10px;height:10px;background:#94a3b8;border-radius:2px;'></span> Profile Avg
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:{border_color_loc};'>
+                            <span style='display:inline-block;width:10px;height:10px;background:{border_color_loc};border-radius:2px;'></span> Profile Avg
+                        </div>
+                        <div style='display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:{arch_color_rows};'>
+                            <span style='display:inline-block;width:10px;height:10px;background:{arch_color_rows};border-radius:2px;'></span> Arc. Avg
                         </div>
                     </div>
                     <div style='border-top:1px solid #e9ecef; margin:0.25rem 0 0.5rem 0;'></div>
@@ -1971,6 +2020,12 @@ with tab4:
         arch_to_col = {a: f"{a}_Score" for a in archetypes_full}
 
         if selected_players:
+            # Radar ile aynı oyuncu renk paleti
+            try:
+                player_color_map_rose = {name: player_colors[i % len(player_colors)] for i, name in enumerate(selected_players)}
+            except Exception:
+                _fallback_colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880']
+                player_color_map_rose = {name: _fallback_colors[i % len(_fallback_colors)] for i, name in enumerate(selected_players)}
             fig_arch = go.Figure()
             for idx_p, player_name in enumerate(selected_players):
                 prow = selected_rows[selected_rows["Player"] == player_name]
@@ -2038,7 +2093,11 @@ with tab4:
             'pass_KP': 'Key Passes',
             'shoot_Sh': 'Total Shots',
             'misc_Recov': 'Ball Recoveries',
-            'pass_1/3': 'Passes into Final Third'
+            'pass_1/3': 'Passes into Final Third',
+            'passt_Sw': 'Switches',
+            'pass_Cmp%': 'Pass Completion %',
+            'def_Tkl+Int': 'Defensive Actions',
+            'gca_TO': 'Successful Dribbles leading to Goal Chance',
         }
 
         col_x, col_y = st.columns(2, gap="medium")
@@ -2090,6 +2149,13 @@ with tab4:
             # Seçilen oyuncular (vurgulanmış) - Jitter ile üst üste gelme sorunu çözümü
             import random
             random.seed(42)  # Tutarlı jitter için
+            # Renk eşlemesi: üstteki radar grafiklerde kullanılan palete uyumlu
+            try:
+                player_color_map = {name: player_colors[i % len(player_colors)] for i, name in enumerate(selected_players)}
+            except Exception:
+                # Fallback paleti
+                _fallback_colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880']
+                player_color_map = {name: _fallback_colors[i % len(_fallback_colors)] for i, name in enumerate(selected_players)}
             
             # Aynı pozisyondaki oyuncuları grupla
             position_groups = {}
@@ -2125,13 +2191,8 @@ with tab4:
                     else:
                         jitter_offset_x = jitter_offset_y = 0
                     
-                    # Oyuncu rengi (profil rengi)
-                    cluster_id = player_row.get('Cluster', None)
-                    try:
-                        cluster_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
-                    except Exception:
-                        cluster_int = None
-                    player_color = get_profile_color(cluster_int) if cluster_int is not None else '#dc2626'
+                    # Oyuncu rengi: radar paleti ile aynı sırada
+                    player_color = player_color_map.get(player_name, '#636EFA')
                     
                     # Hover metni (çoklu oyuncu uyarısı)
                     if len(players_at_pos) > 1:
@@ -2268,12 +2329,12 @@ with tab4:
                             center_y = y + height/2
                             ax.text(center_x, center_y + 6, region, 
                                    fontsize=11, fontweight='600', ha='center', va='center',
-                                   color='#1f2937', fontfamily='Inter, sans-serif',
+                                   color='#1f2937', fontfamily='DejaVu Sans',
                                    bbox=dict(boxstyle="round,pad=0.3", facecolor='#ffffff', alpha=0.95, 
                                             edgecolor='#e5e7eb', linewidth=1))
                             ax.text(center_x, center_y - 6, f'{int(value)}', 
                                    fontsize=9, fontweight='700', ha='center', va='center',
-                                   color='#6b7280', fontfamily='Inter, sans-serif',
+                                   color='#6b7280', fontfamily='DejaVu Sans',
                                    bbox=dict(boxstyle="round,pad=0.2", facecolor='#f9fafb', alpha=1.0, 
                                             edgecolor='#d1d5db', linewidth=0.5))
                         
@@ -2285,7 +2346,7 @@ with tab4:
                         # Başlık ekle - tema uyumlu
                         fig.suptitle(f'{player_name} - Defensive Activity Distribution', 
                                    fontsize=12, fontweight='700', y=0.80, 
-                                   fontfamily='Inter, sans-serif', color='#2563eb')
+                                   fontfamily='DejaVu Sans', color='#2563eb')
                         
                         # Renk açıklaması ekle - açıklayıcı
                         legend_text = ""
@@ -2295,7 +2356,7 @@ with tab4:
                             legend_text += f"{region} Zone ({defensive_actions[region]} actions)"
                         
                         ax.text(50, 12, legend_text, fontsize=8, va='center', ha='center',
-                               fontfamily='Inter, sans-serif', fontweight='500', color='#374151',
+                               fontfamily='DejaVu Sans', fontweight='500', color='#374151',
                                bbox=dict(boxstyle="round,pad=0.3", facecolor='#ffffff', 
                                         alpha=0.95, edgecolor='#e5e7eb', linewidth=1))
                         
@@ -2304,6 +2365,348 @@ with tab4:
                         st.pyplot(fig, use_container_width=True)
                         plt.close()
         
+        # ---------------------------
+        # Pas Gülü Grafiği (Rose Chart)
+        # ---------------------------
+        st.markdown(
+            """
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
+                    Passing Rose Chart
+                </h2>
+                <p style='color:#6b7280; margin:0.25rem 0 0 0; font-size:0.9rem;'>
+                    Four tactical passing categories (0–100) for the selected players.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if selected_players:
+            def hex_to_rgba(hex_color, alpha=0.25):
+                h = str(hex_color).lstrip('#')
+                if len(h) != 6:
+                    return f'rgba(37, 99, 235, {alpha})'
+                r = int(h[0:2], 16)
+                g = int(h[2:4], 16)
+                b = int(h[4:6], 16)
+                return f'rgba({r}, {g}, {b}, {alpha})'
+
+            def safe_val(v):
+                try:
+                    f = float(v)
+                    return 0.0 if pd.isna(f) else f
+                except Exception:
+                    return 0.0
+
+            def safe_mean(values):
+                nums = []
+                for v in values:
+                    try:
+                        f = float(v)
+                        if not pd.isna(f):
+                            nums.append(f)
+                    except Exception:
+                        continue
+                return float(np.mean(nums)) if len(nums) > 0 else 0.0
+
+            for start_idx in range(0, len(selected_players), 2):
+                row_players = selected_players[start_idx:start_idx + 2]
+                cols = st.columns(len(row_players))
+                for ci, pname in enumerate(row_players):
+                    with cols[ci]:
+                        pr = selected_rows[selected_rows["Player"] == pname]
+                        if pr.empty:
+                            continue
+                        prow = pr.iloc[0]
+
+                        puan_guvenli = safe_val(prow.get('pass_Cmp%', np.nan))
+                        puan_oyunkurma = safe_mean([prow.get('pass_PrgP', np.nan), prow.get('pass_1/3', np.nan)])
+                        puan_yaraticilik = safe_mean([prow.get('pass_KP', np.nan), prow.get('std_xAG', np.nan)])
+                        puan_vizyon = safe_val(prow.get('passt_Sw', np.nan))
+
+                        kategoriler = ['Safe Passing', 'Build-up', 'Creativity', 'Vision']
+                        puanlar = [puan_guvenli, puan_oyunkurma, puan_yaraticilik, puan_vizyon]
+
+                        r_vals = puanlar + [puanlar[0]]
+                        theta_vals = kategoriler + [kategoriler[0]]
+
+                        cluster_id = prow.get('Cluster', None)
+                        try:
+                            cluster_int = int(cluster_id) if cluster_id is not None and not pd.isna(cluster_id) else None
+                        except Exception:
+                            cluster_int = None
+                        # Oyuncu rengi: Standard Stats radar paletiyle aynı
+                        base_color = player_color_map_rose.get(pname, '#636EFA')
+
+                        # Rose chart (Barpolar) - eşit açılı, petal görünümü
+                        angles = list(np.linspace(0, 360, len(kategoriler), endpoint=False))
+                        widths = [88] * len(kategoriler)
+
+                        fig_rose = go.Figure()
+                        fig_rose.add_trace(
+                            go.Barpolar(
+                                r=puanlar,
+                                theta=angles,
+                                width=widths,
+                                marker=dict(
+                                    color=[hex_to_rgba(base_color, 0.35)] * len(kategoriler),
+                                    line=dict(color=base_color, width=0),
+                                ),
+                                name=pname,
+                                hovertemplate=
+                                    '<b>' + pname + '</b><br>' +
+                                    '%{customdata[0]}: %{r:.1f}<extra></extra>',
+                                customdata=[[k] for k in kategoriler],
+                                opacity=0.95,
+                            )
+                        )
+                        # Kategori ayırıcı çizgiler (merkezden dışa 4 çizgi)
+                        for sep_angle in angles:
+                            fig_rose.add_trace(
+                                go.Scatterpolar(
+                                    r=[0, 100],
+                                    theta=[sep_angle + 45, sep_angle + 45],
+                                    mode='lines',
+                                    line=dict(color='rgba(209,213,219,0.9)', width=1),  # açık gri
+                                    hoverinfo='skip',
+                                    showlegend=False,
+                                )
+                            )
+                        # Bar değer etiketleri (dışarıda metin olarak)
+                        label_r = [min(100, float(v) + 6.0) for v in puanlar]
+                        fig_rose.add_trace(
+                            go.Scatterpolar(
+                                r=label_r,
+                                theta=angles,
+                                mode='text',
+                                text=[f"{float(v):.0f}" for v in puanlar],
+                                textfont=dict(color='#ffffff', size=12),
+                                hoverinfo='skip',
+                                showlegend=False,
+                            )
+                        )
+                        fig_rose.update_layout(
+                            polar=dict(
+                                radialaxis=dict(
+                                    visible=True,
+                                    range=[0, 100],
+                                    showticklabels=False,
+                                    ticks='',
+                                    showline=False,
+                                    gridcolor='rgba(0,0,0,0)',
+                                    gridwidth=0
+                                ),
+                                angularaxis=dict(
+                                    direction='clockwise',
+                                    rotation=90,
+                                    tickmode='array',
+                                    tickvals=angles,
+                                    ticktext=kategoriler,
+                                    ticks='',
+                                    showline=False,
+                                    gridcolor='rgba(0,0,0,0)',
+                                    tickfont=dict(size=14, color='#000000', family='Inter, DejaVu Sans')
+                                ),
+                                bargap=0.02,
+                            ),
+                            showlegend=False,
+                            title=f"{pname}: Passing Rose Chart",
+                            template='plotly_dark',
+                            height=420,
+                            margin=dict(t=60, b=20, l=20, r=20),
+                        )
+                        st.plotly_chart(fig_rose, use_container_width=True)
+
+        # ---------------------------
+        # Reward & Security Gauges (Gauge)
+        # ---------------------------
+        st.markdown(
+            """
+            <div style='margin: 2.5rem 0 1.0rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
+                    Reward & Security Gauges
+                </h2>
+                <p style='color:#6b7280; margin:0.25rem 0 0 0; font-size:0.9rem;'>
+                    Reward shows how much the player drives and creates danger in possession. Security shows how safely the player keeps the ball with minimal turnovers.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if selected_players:
+            def _safe_float(v):
+                try:
+                    f = float(v)
+                    return 0.0 if pd.isna(f) else f
+                except Exception:
+                    return 0.0
+
+            for pname in selected_players:
+                prow_all = selected_rows[selected_rows["Player"] == pname]
+                if prow_all.empty:
+                    continue
+                prow = prow_all.iloc[0]
+
+                # Reward: pass_KP, pass_PPA, poss_PrgC, gca_TO (0-100 ortalama)
+                reward_metrics = [
+                    _safe_float(prow.get('pass_KP', 0)),
+                    _safe_float(prow.get('pass_PPA', 0)),
+                    _safe_float(prow.get('poss_PrgC', 0)),
+                    _safe_float(prow.get('gca_TO', 0)),
+                ]
+                reward_score = int(round(float(np.mean(reward_metrics)) if len(reward_metrics) > 0 else 0.0))
+
+                # Security: poss_Dis, poss_Mis (ters 0-100; yüksek = daha güvenli)
+                security_raw = [
+                    _safe_float(prow.get('poss_Dis', 0)),
+                    _safe_float(prow.get('poss_Mis', 0)),
+                ]
+                security_inverted = [max(0.0, min(100.0, 100.0 - v)) for v in security_raw]
+                security_score = int(round(float(np.mean(security_inverted)) if len(security_inverted) > 0 else 0.0))
+
+                # Renk adımları
+                steps_cfg = [
+                    {'range': [0, 40], 'color': '#ef4444'},      # red
+                    {'range': [40, 70], 'color': '#f59e0b'},     # yellow
+                    {'range': [70, 100], 'color': '#10b981'},    # green
+                ]
+
+                # Reward Gauge
+                reward_fig = go.Figure(go.Indicator(
+                    mode="gauge+number",
+                    value=reward_score,
+                    title={'text': "Reward Profile", 'font': {'size': 16}},
+                    gauge={
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': '#000000'},
+                        'steps': steps_cfg,
+                        'threshold': {'line': {'color': '#000000', 'width': 6}, 'thickness': 0.9, 'value': reward_score},
+                    },
+                    number={'suffix': '', 'font': {'size': 22}},
+                ))
+                reward_fig.update_layout(height=280, margin=dict(t=40, b=10, l=10, r=10), template='plotly_dark')
+
+                # Security Gauge
+                security_fig = go.Figure(go.Indicator(
+                    mode="gauge+number",
+                    value=security_score,
+                    title={'text': "Security Profile", 'font': {'size': 16}},
+                    gauge={
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': '#000000'},
+                        'steps': steps_cfg,
+                        'threshold': {'line': {'color': '#000000', 'width': 6}, 'thickness': 0.9, 'value': security_score},
+                    },
+                    number={'suffix': '', 'font': {'size': 22}},
+                ))
+                security_fig.update_layout(height=280, margin=dict(t=40, b=10, l=10, r=10), template='plotly_dark')
+
+                st.markdown(f"**{pname}**", unsafe_allow_html=True)
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.plotly_chart(reward_fig, use_container_width=True)
+                with c2:
+                    st.plotly_chart(security_fig, use_container_width=True)
+
+        # ---------------------------
+        # Goal Contribution DNA (Donut)
+        # ---------------------------
+        st.markdown(
+            """
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
+                    Goal Contribution DNA
+                </h2>
+                <p style='color:#6b7280; margin:0.25rem 0 0 0; font-size:0.9rem;'>
+                    Percentage split of Goal Creating Actions (GCA) by action type.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if selected_players:
+            labels_gca = [
+                "Live Pass",
+                "Dead Ball",
+                "Take-on / Dribble",
+                "Shot Rebound",
+                "Fouled / Won Foul",
+            ]
+            color_gca = [
+                '#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A'
+            ]
+
+            for start_idx in range(0, len(selected_players), 2):
+                row_players = selected_players[start_idx:start_idx + 2]
+                cols = st.columns(len(row_players))
+                for ci, pname in enumerate(row_players):
+                    with cols[ci]:
+                        pr = selected_rows[selected_rows["Player"] == pname]
+                        if pr.empty:
+                            continue
+                        prow = pr.iloc[0]
+
+                        def _safe(v):
+                            try:
+                                f = float(v)
+                                return 0.0 if pd.isna(f) else f
+                            except Exception:
+                                return 0.0
+
+                        vals = [
+                            _safe(prow.get('gca_PassLive', 0)),
+                            _safe(prow.get('gca_PassDead', 0)),
+                            _safe(prow.get('gca_TO', 0)),
+                            _safe(prow.get('gca_Sh', 0)),
+                            _safe(prow.get('gca_Fld', 0)),
+                        ]
+                        total_gca = float(np.sum(vals))
+                        if total_gca <= 0:
+                            st.info("Bu oyuncunun sezon boyunca kayıtlı bir gol pozisyonu yaratma aksiyonu bulunmamaktadır.")
+                            continue
+
+                        max_idx = int(np.argmax(vals)) if any(v > 0 for v in vals) else 0
+                        pull_arr = [0.0] * len(vals)
+                        pull_arr[max_idx] = 0.10
+
+                        fig_donut = go.Figure([
+                            go.Pie(
+                                labels=labels_gca,
+                                values=vals,
+                                hole=0.5,
+                                marker=dict(colors=color_gca, line=dict(color='white', width=1)),
+                                sort=False,
+                                direction='clockwise',
+                                textinfo='percent',
+                                textposition='inside',
+                                insidetextorientation='radial',
+                                pull=pull_arr,
+                                hovertemplate='%{label}<br>%{value} Actions (%{percent})<extra></extra>',
+                                name=pname,
+                            )
+                        ])
+
+                        fig_donut.add_annotation(
+                            text=f"Total GCA\n{int(total_gca)}",
+                            x=0.5, y=0.5, showarrow=False,
+                            font=dict(size=18, color='#ffffff')
+                        )
+                        fig_donut.update_traces(textfont=dict(color='#ffffff', size=12))
+                        fig_donut.update_layout(
+                            title=f"{pname}: Goal Contribution DNA",
+                            template='plotly_dark',
+                            showlegend=True,
+                            height=420,
+                            margin=dict(t=60, b=20, l=20, r=20),
+                            legend=dict(font=dict(size=12))
+                        )
+                        st.plotly_chart(fig_donut, use_container_width=True)
+
+        
+
         # ---------------------------
         # Similar Players
         # ---------------------------
@@ -2896,7 +3299,7 @@ with tab6:
         
         # Create minutes bins for trend analysis
         df['Minutes_Bin'] = pd.cut(df['std_Min'], bins=5, labels=['Very Low', 'Low', 'Medium', 'High', 'Very High'])
-        minutes_trend = df.groupby('Minutes_Bin').agg({
+        minutes_trend = df.groupby('Minutes_Bin', observed=False).agg({
             'std_Gls': 'mean',
             'std_Ast': 'mean',
             'std_xG': 'mean',
@@ -3023,7 +3426,7 @@ with trend_tab2:
                                       bins=5, 
                                       labels=['0-500', '500-1000', '1000-1500', '1500-2000', '2000+'])
     
-    minutes_trends = df_minutes.groupby('Minutes_Bin').agg({
+    minutes_trends = df_minutes.groupby('Minutes_Bin', observed=False).agg({
         'std_Gls': 'mean',
         'std_Ast': 'mean',
         'std_xG': 'mean',
