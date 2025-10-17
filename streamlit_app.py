@@ -411,6 +411,71 @@ def get_score_color(score, archetype):
     else:
         return palette['high']
 
+# Similarity helpers
+def get_0_100_metric_columns(df_input: pd.DataFrame) -> list:
+    """Infer 0-100 scaled metric columns by value range, excluding id/meta fields."""
+    exclude_cols = {
+        'Player','Squad','Nation','Pos','Primary_Archetype','Secondary_Archetype',
+        'Secondary_Archetype_Score','Archetype_Score','Cluster','Minutes_Bin'
+    }
+    # Age may be <= 100 but we don't want it as a score feature
+    exclude_cols.add('Age')
+    metric_cols = []
+    for col in df_input.columns:
+        if col in exclude_cols:
+            continue
+        s = df_input[col]
+        if pd.api.types.is_numeric_dtype(s):
+            vals = s.dropna().values
+            if vals.size == 0:
+                continue
+            vmin = np.nanmin(vals)
+            vmax = np.nanmax(vals)
+            if vmin >= 0 and vmax <= 100:
+                metric_cols.append(col)
+    return metric_cols
+
+def find_similar_players(df_all: pd.DataFrame, selected_player: str, top_k: int = 3) -> pd.DataFrame:
+    """Return top_k most similar players to selected_player within the same Cluster.
+    - Uses Euclidean distance over inferred 0-100 metric columns
+    - Converts distance to 0-100 Similarity_Score: 100 - (d/max_d)*100
+    """
+    if selected_player not in set(df_all['Player']):
+        return pd.DataFrame(columns=['Player','Squad','Age','Primary_Archetype','Similarity_Score'])
+
+    metrics = get_0_100_metric_columns(df_all)
+    if len(metrics) == 0:
+        return pd.DataFrame(columns=['Player','Squad','Age','Primary_Archetype','Similarity_Score'])
+
+    sel_row = df_all[df_all['Player'] == selected_player].iloc[0]
+    sel_cluster = sel_row.get('Cluster', None)
+    df_cluster = df_all[df_all['Cluster'] == sel_cluster].copy() if sel_cluster is not None else df_all.copy()
+
+    # Drop rows without any metric values; fill remaining NaNs by cluster-wise column mean
+    cluster_means = df_cluster[metrics].mean(numeric_only=True)
+    df_cluster[metrics] = df_cluster[metrics].fillna(cluster_means)
+
+    sel_vec = sel_row[metrics].fillna(cluster_means).values.astype(float)
+    # Compute distances
+    mat = df_cluster[metrics].values.astype(float)
+    diffs = mat - sel_vec
+    dists = np.linalg.norm(diffs, axis=1)
+    df_cluster = df_cluster.assign(_dist=dists)
+    # Exclude self
+    df_cluster = df_cluster[df_cluster['Player'] != selected_player]
+    if df_cluster.empty:
+        return pd.DataFrame(columns=['Player','Squad','Age','Primary_Archetype','Similarity_Score'])
+
+    max_d = float(df_cluster['_dist'].max())
+    if max_d == 0.0:
+        sim_scores = np.full(len(df_cluster), 100.0)
+    else:
+        sim_scores = 100.0 - (df_cluster['_dist'].values / max_d) * 100.0
+    df_cluster = df_cluster.assign(Similarity_Score=sim_scores)
+    df_sorted = df_cluster.sort_values('Similarity_Score', ascending=False)
+    top = df_sorted.head(top_k)
+    return top[['Player','Squad','Age','Primary_Archetype','Similarity_Score']]
+
 # ---------------------------
 # STEP 0.5: COLUMN DESCRIPTIONS (English)
 # ---------------------------
@@ -2711,36 +2776,81 @@ with tab4:
         # Similar Players
         # ---------------------------
         st.markdown("""
-            <div style='margin: 3rem 0 1.5rem 0;'>
-                <h2 style='font-size: 2rem; font-weight: 800;
-                           background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
-                           -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
                     Similar Players
                 </h2>
             </div>
         """, unsafe_allow_html=True)
         
-        # Find similar players for each selected player
+        # Yeni yöntem: küme içi, 0-100 metrikler ile Öklidyen mesafe -> 0-100 benzerlik (Kart görünümü)
         for player_name in selected_players:
-            player_row = selected_rows[selected_rows["Player"] == player_name]
-            if not player_row.empty:
-                df_metrics = df[radar_metrics].copy()
-                selected_vector = player_row[radar_metrics].values.flatten()
-                df_temp = df.copy()
-                df_temp["Similarity"] = np.linalg.norm(df_metrics.values - selected_vector, axis=1)
-                similar_players = df_temp[df_temp["Player"] != player_name].nsmallest(5, "Similarity")
-                
-                st.write(f"5 most similar players to **{player_name}**:")
-                st.dataframe(similar_players[["Player","Pos","Squad","Age","Cluster"] + radar_metrics])
+            top_sim = find_similar_players(df, player_name, top_k=3)
+            if top_sim is None or top_sim.empty:
+                st.info(f"No similar players found for {player_name}.")
+                continue
+            st.markdown(f"**Statistically Similar Profiles – {player_name}**")
+            st.markdown("<br>", unsafe_allow_html=True)
+            # 3 kartlık satır
+            cols_cards = st.columns(min(3, len(top_sim)), gap="medium")
+            for i in range(len(top_sim)):
+                row = top_sim.iloc[i]
+                pname = str(row.get('Player','N/A'))
+                squad = str(row.get('Squad','N/A'))
+                age_val = row.get('Age', np.nan)
+                arch = str(row.get('Primary_Archetype','N/A'))
+                sim = float(row.get('Similarity_Score', 0.0))
+                arch_color = get_archetype_color(arch)
+                team_color = get_team_color(squad)
+                # Profile color (from Cluster of this player)
+                try:
+                    cluster_id_sim = df.loc[df['Player'] == pname, 'Cluster'].iloc[0]
+                except Exception:
+                    cluster_id_sim = None
+                prof_color = get_profile_color(int(cluster_id_sim)) if cluster_id_sim is not None and not pd.isna(cluster_id_sim) else '#6b7280'
+                age_display = 'N/A' if pd.isna(age_val) else f"{float(age_val):.0f}"
+                with cols_cards[i % len(cols_cards)]:
+                    st.markdown(f"""
+                        <div class='player-card' style='border: 2px solid {prof_color};
+                                    border-radius: 10px; padding: 1rem; 
+                                    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <div style='text-align: center;'>
+                                <div style='color: {prof_color}; font-size: 0.8rem; font-weight: 700;'>#{i+1} MOST SIMILAR</div>
+                                <h4 style='margin: 0.3rem 0; color: #111827; font-size: 1.05rem; background: linear-gradient(135deg, {prof_color}15, {prof_color}08); padding: 0.3rem 0.5rem; border-radius: 4px;'>
+                                    {pname}
+                                </h4>
+                                <p style='margin: 0; color: {team_color}; font-size: 0.9rem; background: linear-gradient(135deg, {prof_color}12, {prof_color}05); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;'>
+                                    {squad}
+                                </p>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    st.markdown(f"""
+                        <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; 
+                                    margin-top: 0.8rem; font-size: 0.85rem;'>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Age</div>
+                                <div style='font-weight: 600; color: #111827;'>{age_display}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Archetype</div>
+                                <div style='font-weight: 700; color: {arch_color};'>{arch}</div>
+                            </div>
+                            <div style='text-align: center; padding: 0.4rem; background: #f5f5f5; border-radius: 5px; grid-column: span 2;'>
+                                <div style='color: #888; font-size: 0.7rem;'>Similarity Score</div>
+                                <div style='font-weight: 800; color: {get_rating_color(sim)};'>{sim:.1f}</div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+            st.markdown("<br><br>", unsafe_allow_html=True)
 
         # ---------------------------
         # Compare All Player Profiles
         # ---------------------------
         st.markdown("""
-            <div style='margin: 3rem 0 1.5rem 0;'>
-                <h2 style='font-size: 2rem; font-weight: 800;
-                           background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
-                           -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
                     Compare All Player Profiles
                 </h2>
             </div>
@@ -2776,30 +2886,21 @@ with tab4:
         # / Excel Report
         # ---------------------------
         st.markdown("""
-            <div style='margin: 3rem 0 1.5rem 0;'>
-                <h2 style='font-size: 2rem; font-weight: 800;
-                           background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
-                           -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+            <div style='margin: 3rem 0 1.2rem 0;'>
+                <h2 style='font-size: 1.6rem; font-weight: 700; color: #2563eb; margin: 0;'>
                     Download Report
                 </h2>
             </div>
         """, unsafe_allow_html=True)
         
         if len(selected_players) == 1:
-            # Current format for single player
+            # Yeni Excel: ilk 3 benzer (yeni yöntem)
             player_name = selected_players[0]
-            player_row = selected_rows[selected_rows["Player"] == player_name]
-            df_metrics = df[radar_metrics].copy()
-            selected_vector = player_row[radar_metrics].values.flatten()
-            df_temp = df.copy()
-            df_temp["Similarity"] = np.linalg.norm(df_metrics.values - selected_vector, axis=1)
-            similar_players = df_temp[df_temp["Player"] != player_name].nsmallest(5, "Similarity")
-            
-            # Excel
+            top_sim = find_similar_players(df, player_name, top_k=3)
             excel_buffer = BytesIO()
-            similar_players.to_excel(excel_buffer, index=False, engine='openpyxl')
+            (top_sim if top_sim is not None else pd.DataFrame()).to_excel(excel_buffer, index=False, engine='openpyxl')
             excel_buffer.seek(0)
-            st.download_button(label=f"{player_name} - Download Similar Players Excel",
+            st.download_button(label=f"{player_name} - Benzer Oyuncular (Excel)",
                                data=excel_buffer,
                                file_name=f"{player_name}_similar_players.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -4037,6 +4138,7 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
+
 
 # ---------------------------
 # STEP 8: HISTOGRAM ANALYSES - Moved to Tab7
