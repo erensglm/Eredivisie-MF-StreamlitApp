@@ -3108,7 +3108,21 @@ with tab5:
                 creative_leaders = df.nlargest(5, 'key_pass_efficiency')[['Player', 'Squad', 'key_pass_efficiency']].copy()
                 creative_leaders.columns = ['Player', 'Team', 'Key Passes per 90']
                 creative_leaders['Key Passes per 90'] = creative_leaders['Key Passes per 90'].round(2)
-                st.dataframe(creative_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    creative_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Key Passes per 90": st.column_config.ProgressColumn(
+                            "Key Passes per 90",
+                            format="%.2f",
+                            min_value=0,
+                            max_value=float(creative_leaders['Key Passes per 90'].max()),
+                        ),
+                    }
+                )
             else:
                 st.info("Key passes or minutes data not found")
         
@@ -3131,7 +3145,23 @@ with tab5:
                     efficiency_leaders['Efficiency %'] = efficiency_leaders['Efficiency %'].round(1)
                     efficiency_leaders['Key Passes'] = efficiency_leaders['Key Passes'].round(1)
                     efficiency_leaders['Progressive Passes'] = efficiency_leaders['Progressive Passes'].round(1)
-                    st.dataframe(efficiency_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        efficiency_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Efficiency %": st.column_config.ProgressColumn(
+                                "Efficiency %",
+                                format="%.1f%%",
+                                min_value=0,
+                                max_value=float(efficiency_leaders['Efficiency %'].max()),
+                            ),
+                            "Key Passes": st.column_config.NumberColumn("Key Passes", format="%.1f"),
+                            "Progressive Passes": st.column_config.NumberColumn("Progressive Passes", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No players with 10+ progressive passes found")
             else:
@@ -3155,7 +3185,25 @@ with tab5:
                 maestro_leaders['Penalty Passes'] = maestro_leaders['Penalty Passes'].round(1)
                 maestro_leaders['xAG'] = maestro_leaders['xAG'].round(1)
                 maestro_leaders['Pass %'] = (maestro_leaders['Pass %'] * 100).round(1)
-                st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    maestro_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Maestro Score": st.column_config.ProgressColumn(
+                            "Maestro Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(maestro_leaders['Maestro Score'].max()),
+                        ),
+                        "Key Passes": st.column_config.NumberColumn("Key Passes", format="%.1f"),
+                        "Penalty Passes": st.column_config.NumberColumn("Penalty Passes", format="%.1f"),
+                        "xAG": st.column_config.NumberColumn("xAG", format="%.1f"),
+                        "Pass %": st.column_config.NumberColumn("Pass %", format="%.1f%%"),
+                    }
+                )
             else:
                 st.info("Maestro calculation data not found")
         
@@ -3179,7 +3227,24 @@ with tab5:
                 vertical_leaders['Progressive Passes'] = vertical_leaders['Progressive Passes'].round(1)
                 vertical_leaders['Final Third'] = vertical_leaders['Final Third'].round(1)
                 vertical_leaders['Penalty Passes'] = vertical_leaders['Penalty Passes'].round(1)
-                st.dataframe(vertical_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    vertical_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Vertical Score": st.column_config.ProgressColumn(
+                            "Vertical Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(vertical_leaders['Vertical Score'].max()),
+                        ),
+                        "Progressive Passes": st.column_config.NumberColumn("Progressive Passes", format="%.1f"),
+                        "Final Third": st.column_config.NumberColumn("Final Third", format="%.1f"),
+                        "Penalty Passes": st.column_config.NumberColumn("Penalty Passes", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Vertical playmaker data not found")
         
@@ -3202,7 +3267,23 @@ with tab5:
                     press_leaders['Reliability Ratio'] = press_leaders['Reliability Ratio'].round(2)
                     press_leaders['Pass %'] = (press_leaders['Pass %'] * 100).round(1)
                     press_leaders['Dispossessions'] = press_leaders['Dispossessions'].round(1)
-                    st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        press_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Reliability Ratio": st.column_config.ProgressColumn(
+                                "Reliability Ratio",
+                                format="%.2f",
+                                min_value=0,
+                                max_value=float(press_leaders['Reliability Ratio'].max()),
+                            ),
+                            "Pass %": st.column_config.NumberColumn("Pass %", format="%.1f%%"),
+                            "Dispossessions": st.column_config.NumberColumn("Dispossessions", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No qualified passers found")
             else:
@@ -3224,7 +3305,23 @@ with tab5:
                 visionary_leaders['Vision Score'] = visionary_leaders['Vision Score'].round(1)
                 visionary_leaders['Switches'] = visionary_leaders['Switches'].round(1)
                 visionary_leaders['Through Balls'] = visionary_leaders['Through Balls'].round(1)
-                st.dataframe(visionary_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    visionary_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Vision Score": st.column_config.ProgressColumn(
+                            "Vision Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(visionary_leaders['Vision Score'].max()),
+                        ),
+                        "Switches": st.column_config.NumberColumn("Switches", format="%.1f"),
+                        "Through Balls": st.column_config.NumberColumn("Through Balls", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Switch or through ball data not found")
     
@@ -3256,7 +3353,21 @@ with tab5:
                 defensive_leaders = df.nlargest(5, 'defensive_efficiency')[['Player', 'Squad', 'defensive_efficiency']].copy()
                 defensive_leaders.columns = ['Player', 'Team', 'Tackles+Int per 90']
                 defensive_leaders['Tackles+Int per 90'] = defensive_leaders['Tackles+Int per 90'].round(2)
-                st.dataframe(defensive_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    defensive_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Tackles+Int per 90": st.column_config.ProgressColumn(
+                            "Tackles+Int per 90",
+                            format="%.2f",
+                            min_value=0,
+                            max_value=float(defensive_leaders['Tackles+Int per 90'].max()),
+                        ),
+                    }
+                )
             else:
                 st.info("Defensive or minutes data not found")
         
@@ -3273,7 +3384,21 @@ with tab5:
                 recovery_leaders = df.nlargest(5, 'recovery_rate')[['Player', 'Squad', 'recovery_rate']].copy()
                 recovery_leaders.columns = ['Player', 'Team', 'Recoveries per 90']
                 recovery_leaders['Recoveries per 90'] = recovery_leaders['Recoveries per 90'].round(2)
-                st.dataframe(recovery_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    recovery_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Recoveries per 90": st.column_config.ProgressColumn(
+                            "Recoveries per 90",
+                            format="%.2f",
+                            min_value=0,
+                            max_value=float(recovery_leaders['Recoveries per 90'].max()),
+                        ),
+                    }
+                )
             else:
                 st.info("Recovery or minutes data not found")
         
@@ -3299,7 +3424,23 @@ with tab5:
                     intelligence_leaders['Intelligence Ratio'] = intelligence_leaders['Intelligence Ratio'].round(2)
                     intelligence_leaders['Interceptions'] = intelligence_leaders['Interceptions'].round(1)
                     intelligence_leaders['Tackles'] = intelligence_leaders['Tackles'].round(1)
-                    st.dataframe(intelligence_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        intelligence_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Intelligence Ratio": st.column_config.ProgressColumn(
+                                "Intelligence Ratio",
+                                format="%.2f",
+                                min_value=0,
+                                max_value=float(intelligence_leaders['Intelligence Ratio'].max()),
+                            ),
+                            "Interceptions": st.column_config.NumberColumn("Interceptions", format="%.1f"),
+                            "Tackles": st.column_config.NumberColumn("Tackles", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No qualified defenders found")
             else:
@@ -3325,7 +3466,23 @@ with tab5:
                     press_leaders['High Press %'] = press_leaders['High Press %'].round(1)
                     press_leaders['Attacking Third'] = press_leaders['Attacking Third'].round(1)
                     press_leaders['Total Actions'] = press_leaders['Total Actions'].round(1)
-                    st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        press_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "High Press %": st.column_config.ProgressColumn(
+                                "High Press %",
+                                format="%.1f%%",
+                                min_value=0,
+                                max_value=100.0,
+                            ),
+                            "Attacking Third": st.column_config.NumberColumn("Attacking Third", format="%.1f"),
+                            "Total Actions": st.column_config.NumberColumn("Total Actions", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No qualified pressers found")
             else:
@@ -3366,7 +3523,23 @@ with tab5:
                     clinical_leaders['Goals/xG Ratio'] = clinical_leaders['Goals/xG Ratio'].round(2)
                     clinical_leaders['Goals'] = clinical_leaders['Goals'].round(1)
                     clinical_leaders['xG'] = clinical_leaders['xG'].round(1)
-                    st.dataframe(clinical_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        clinical_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Goals": st.column_config.NumberColumn("Goals", format="%.1f"),
+                            "xG": st.column_config.NumberColumn("xG", format="%.1f"),
+                            "Goals/xG Ratio": st.column_config.ProgressColumn(
+                                "Goals/xG Ratio",
+                                format="%.2f",
+                                min_value=0,
+                                max_value=float(clinical_leaders['Goals/xG Ratio'].max()),
+                            ),
+                        }
+                    )
                 else:
                     st.info("No players with 5+ goals found")
             else:
@@ -3389,7 +3562,24 @@ with tab5:
                 threat_leaders['Penalty Passes'] = threat_leaders['Penalty Passes'].round(1)
                 threat_leaders['Penalty Carries'] = threat_leaders['Penalty Carries'].round(1)
                 threat_leaders['Penalty Receives'] = threat_leaders['Penalty Receives'].round(1)
-                st.dataframe(threat_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    threat_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Threat Score": st.column_config.ProgressColumn(
+                            "Threat Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(threat_leaders['Threat Score'].max()),
+                        ),
+                        "Penalty Passes": st.column_config.NumberColumn("Penalty Passes", format="%.1f"),
+                        "Penalty Carries": st.column_config.NumberColumn("Penalty Carries", format="%.1f"),
+                        "Penalty Receives": st.column_config.NumberColumn("Penalty Receives", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Penalty area data not found")
         
@@ -3410,7 +3600,24 @@ with tab5:
                 army_leaders['Take-Ons'] = army_leaders['Take-Ons'].round(1)
                 army_leaders['Fouls Won'] = army_leaders['Fouls Won'].round(1)
                 army_leaders['Penalty Carries'] = army_leaders['Penalty Carries'].round(1)
-                st.dataframe(army_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    army_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Army Score": st.column_config.ProgressColumn(
+                            "Army Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(army_leaders['Army Score'].max()),
+                        ),
+                        "Take-Ons": st.column_config.NumberColumn("Take-Ons", format="%.1f"),
+                        "Fouls Won": st.column_config.NumberColumn("Fouls Won", format="%.1f"),
+                        "Penalty Carries": st.column_config.NumberColumn("Penalty Carries", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Individual skill data not found")
         
@@ -3433,7 +3640,23 @@ with tab5:
                 maestro_leaders['Maestro Score'] = maestro_leaders['Maestro Score'].round(1)
                 maestro_leaders['Dead Ball Assists'] = maestro_leaders['Dead Ball Assists'].round(1)
                 maestro_leaders['Crosses'] = maestro_leaders['Crosses'].round(1)
-                st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    maestro_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Maestro Score": st.column_config.ProgressColumn(
+                            "Maestro Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(maestro_leaders['Maestro Score'].max()),
+                        ),
+                        "Dead Ball Assists": st.column_config.NumberColumn("Dead Ball Assists", format="%.1f"),
+                        "Crosses": st.column_config.NumberColumn("Crosses", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Set piece data not found")
         
@@ -3457,7 +3680,23 @@ with tab5:
                     playmaking_leaders['Assists/xAG Ratio'] = playmaking_leaders['Assists/xAG Ratio'].round(2)
                     playmaking_leaders['Assists'] = playmaking_leaders['Assists'].round(1)
                     playmaking_leaders['xAG'] = playmaking_leaders['xAG'].round(1)
-                    st.dataframe(playmaking_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        playmaking_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Assists": st.column_config.NumberColumn("Assists", format="%.1f"),
+                            "xAG": st.column_config.NumberColumn("xAG", format="%.1f"),
+                            "Assists/xAG Ratio": st.column_config.ProgressColumn(
+                                "Assists/xAG Ratio",
+                                format="%.2f",
+                                min_value=0,
+                                max_value=float(playmaking_leaders['Assists/xAG Ratio'].max()),
+                            ),
+                        }
+                    )
                 else:
                     st.info("No players with 5+ assists found")
             else:
@@ -3494,7 +3733,24 @@ with tab5:
                 carrier_leaders['Progressive Carries'] = carrier_leaders['Progressive Carries'].round(1)
                 carrier_leaders['Final Third'] = carrier_leaders['Final Third'].round(1)
                 carrier_leaders['Penalty Area'] = carrier_leaders['Penalty Area'].round(1)
-                st.dataframe(carrier_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    carrier_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Carrier Score": st.column_config.ProgressColumn(
+                            "Carrier Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(carrier_leaders['Carrier Score'].max()),
+                        ),
+                        "Progressive Carries": st.column_config.NumberColumn("Progressive Carries", format="%.1f"),
+                        "Final Third": st.column_config.NumberColumn("Final Third", format="%.1f"),
+                        "Penalty Area": st.column_config.NumberColumn("Penalty Area", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Ball carrying data not found")
         
@@ -3517,7 +3773,23 @@ with tab5:
                     breaker_leaders['Reliability Ratio'] = breaker_leaders['Reliability Ratio'].round(2)
                     breaker_leaders['Total Carries'] = breaker_leaders['Total Carries'].round(1)
                     breaker_leaders['Dispossessions'] = breaker_leaders['Dispossessions'].round(1)
-                    st.dataframe(breaker_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        breaker_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "Reliability Ratio": st.column_config.ProgressColumn(
+                                "Reliability Ratio",
+                                format="%.2f",
+                                min_value=0,
+                                max_value=float(breaker_leaders['Reliability Ratio'].max()),
+                            ),
+                            "Total Carries": st.column_config.NumberColumn("Total Carries", format="%.1f"),
+                            "Dispossessions": st.column_config.NumberColumn("Dispossessions", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No players with 20+ carries found")
             else:
@@ -3545,7 +3817,23 @@ with tab5:
                     dribbler_leaders['End-Product %'] = dribbler_leaders['End-Product %'].round(1)
                     dribbler_leaders['Take-Ons'] = dribbler_leaders['Take-Ons'].round(1)
                     dribbler_leaders['Total Carries'] = dribbler_leaders['Total Carries'].round(1)
-                    st.dataframe(dribbler_leaders, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                        dribbler_leaders, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        column_config={
+                            "Player": st.column_config.TextColumn("Player", width="medium"),
+                            "Team": st.column_config.TextColumn("Team", width="small"),
+                            "End-Product %": st.column_config.ProgressColumn(
+                                "End-Product %",
+                                format="%.1f%%",
+                                min_value=0,
+                                max_value=float(dribbler_leaders['End-Product %'].max()),
+                            ),
+                            "Take-Ons": st.column_config.NumberColumn("Take-Ons", format="%.1f"),
+                            "Total Carries": st.column_config.NumberColumn("Total Carries", format="%.1f"),
+                        }
+                    )
                 else:
                     st.info("No players with 20+ carries found")
             else:
@@ -3567,7 +3855,23 @@ with tab5:
                 dribble_leaders['Impact Score'] = dribble_leaders['Impact Score'].round(1)
                 dribble_leaders['Progressive Carries'] = dribble_leaders['Progressive Carries'].round(1)
                 dribble_leaders['Take-Ons'] = dribble_leaders['Take-Ons'].round(1)
-                st.dataframe(dribble_leaders, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    dribble_leaders, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    column_config={
+                        "Player": st.column_config.TextColumn("Player", width="medium"),
+                        "Team": st.column_config.TextColumn("Team", width="small"),
+                        "Impact Score": st.column_config.ProgressColumn(
+                            "Impact Score",
+                            format="%.1f",
+                            min_value=0,
+                            max_value=float(dribble_leaders['Impact Score'].max()),
+                        ),
+                        "Progressive Carries": st.column_config.NumberColumn("Progressive Carries", format="%.1f"),
+                        "Take-Ons": st.column_config.NumberColumn("Take-Ons", format="%.1f"),
+                    }
+                )
             else:
                 st.info("Progressive carries or take-ons data not found")
 
