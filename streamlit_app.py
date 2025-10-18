@@ -453,9 +453,9 @@ def find_similar_players(df_all: pd.DataFrame, selected_player: str, top_k: int 
 
     # Drop rows without any metric values; fill remaining NaNs by cluster-wise column mean
     cluster_means = df_cluster[metrics].mean(numeric_only=True)
-    df_cluster[metrics] = df_cluster[metrics].fillna(cluster_means)
+    df_cluster[metrics] = df_cluster[metrics].fillna(cluster_means).infer_objects(copy=False)
 
-    sel_vec = sel_row[metrics].fillna(cluster_means).values.astype(float)
+    sel_vec = sel_row[metrics].fillna(cluster_means).infer_objects(copy=False).values.astype(float)
     # Compute distances
     mat = df_cluster[metrics].values.astype(float)
     diffs = mat - sel_vec
@@ -475,6 +475,51 @@ def find_similar_players(df_all: pd.DataFrame, selected_player: str, top_k: int 
     df_sorted = df_cluster.sort_values('Similarity_Score', ascending=False)
     top = df_sorted.head(top_k)
     return top[['Player','Squad','Age','Primary_Archetype','Similarity_Score']]
+
+def find_similar_players_with_all_metrics(df_all: pd.DataFrame, selected_player: str, top_k: int = 3) -> pd.DataFrame:
+    """Return top_k most similar players with ALL metrics for detailed Excel export.
+    - Uses Euclidean distance over inferred 0-100 metric columns
+    - Returns complete player data including all statistics
+    """
+    if selected_player not in set(df_all['Player']):
+        return pd.DataFrame()
+
+    metrics = get_0_100_metric_columns(df_all)
+    if len(metrics) == 0:
+        return pd.DataFrame()
+
+    sel_row = df_all[df_all['Player'] == selected_player].iloc[0]
+    sel_cluster = sel_row.get('Cluster', None)
+    df_cluster = df_all[df_all['Cluster'] == sel_cluster].copy() if sel_cluster is not None else df_all.copy()
+
+    # Drop rows without any metric values; fill remaining NaNs by cluster-wise column mean
+    cluster_means = df_cluster[metrics].mean(numeric_only=True)
+    df_cluster[metrics] = df_cluster[metrics].fillna(cluster_means).infer_objects(copy=False)
+
+    sel_vec = sel_row[metrics].fillna(cluster_means).infer_objects(copy=False).values.astype(float)
+    # Compute distances
+    mat = df_cluster[metrics].values.astype(float)
+    diffs = mat - sel_vec
+    dists = np.linalg.norm(diffs, axis=1)
+    df_cluster = df_cluster.assign(_dist=dists)
+    # Exclude self
+    df_cluster = df_cluster[df_cluster['Player'] != selected_player]
+    if df_cluster.empty:
+        return pd.DataFrame()
+
+    max_d = float(df_cluster['_dist'].max())
+    if max_d == 0.0:
+        sim_scores = np.full(len(df_cluster), 100.0)
+    else:
+        sim_scores = 100.0 - (df_cluster['_dist'].values / max_d) * 100.0
+    df_cluster = df_cluster.assign(Similarity_Score=sim_scores)
+    df_sorted = df_cluster.sort_values('Similarity_Score', ascending=False)
+    top = df_sorted.head(top_k)
+    
+    # Return all columns with Similarity_Score added
+    result = top.copy()
+    result = result.drop(columns=['_dist'])  # Remove internal distance column
+    return result
 
 # ---------------------------
 # STEP 0.5: COLUMN DESCRIPTIONS (English)
@@ -2894,36 +2939,110 @@ with tab4:
         """, unsafe_allow_html=True)
         
         if len(selected_players) == 1:
-            # Yeni Excel: ilk 3 benzer (yeni yöntem)
+            # PDF Print özelliği
             player_name = selected_players[0]
-            top_sim = find_similar_players(df, player_name, top_k=3)
-            excel_buffer = BytesIO()
-            (top_sim if top_sim is not None else pd.DataFrame()).to_excel(excel_buffer, index=False, engine='openpyxl')
-            excel_buffer.seek(0)
-            st.download_button(label=f"{player_name} - Benzer Oyuncular (Excel)",
-                               data=excel_buffer,
-                               file_name=f"{player_name}_similar_players.xlsx",
-                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            
+            # Print CSS ve JavaScript ekle
+            st.markdown("""
+            <style>
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .print-area, .print-area * {
+                    visibility: visible;
+                }
+                .print-area {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                }
+                .no-print {
+                    display: none !important;
+                }
+                .page-break {
+                    page-break-before: always;
+                }
+            }
+            .print-btn {
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.3s;
+            }
+            .print-btn:hover {
+                background-color: #c82333;
+            }
+            </style>
+            
+            <script>
+            function printPage() {
+                // Print dialog'u aç
+                window.print();
+            }
+            
+            // Sayfa yüklendiğinde print fonksiyonunu hazırla
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Print function ready');
+            });
+            </script>
+            """, unsafe_allow_html=True)
+            
+            # Print butonu - Streamlit components ile
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button(f"📄 {player_name} - PDF Print", 
+                           type="primary", 
+                           use_container_width=True,
+                           help="Sayfayı PDF olarak yazdırmak için tıklayın"):
+                    st.markdown("""
+                    <script>
+                    setTimeout(function() {
+                        window.print();
+                    }, 100);
+                    </script>
+                    """, unsafe_allow_html=True)
+            
+            # Print alanını işaretle
+            st.markdown('<div class="print-area">', unsafe_allow_html=True)
 
             
         
         elif len(selected_players) > 1:
-            # Comparison report for multiple players
-            comparison_data = selected_rows[["Player","Pos","Squad","Age","Cluster"] + radar_metrics]
+            # PDF Print özelliği - Çoklu oyuncu karşılaştırması
+            players_list = ", ".join(selected_players)
             
-            # Excel
-            excel_buffer = BytesIO()
-            comparison_data.to_excel(excel_buffer, index=False, engine='openpyxl')
-            excel_buffer.seek(0)
-            st.download_button(label="Selected Players Comparison - Download Excel",
-                               data=excel_buffer,
-                               file_name=f"player_comparison_{len(selected_players)}_players.xlsx",
-                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            # Print butonu - Streamlit components ile
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button(f"📄 {len(selected_players)} Oyuncu Karşılaştırması - PDF Print", 
+                           type="primary", 
+                           use_container_width=True,
+                           help="Sayfayı PDF olarak yazdırmak için tıklayın"):
+                    st.markdown("""
+                    <script>
+                    setTimeout(function() {
+                        window.print();
+                    }, 100);
+                    </script>
+                    """, unsafe_allow_html=True)
+            
+            # Print alanını işaretle
+            st.markdown('<div class="print-area">', unsafe_allow_html=True)
 
             
 
     # Call the analysis function
     update_player_view(player_select)
+    
+    # Print alanını kapat
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with tab5:
     st.markdown("""
@@ -4138,7 +4257,6 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
-
 
 # ---------------------------
 # STEP 8: HISTOGRAM ANALYSES - Moved to Tab7
