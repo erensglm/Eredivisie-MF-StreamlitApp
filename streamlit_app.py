@@ -1518,7 +1518,7 @@ with tab4:
         # ---------------------------
         # Selected Players Profile Cards
         # ---------------------------
-        st.markdown("### 🎯 Selected Player Cards")
+        st.markdown("###  Selected Player Cards")
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Calculate overall ratings for selected players
@@ -3072,496 +3072,504 @@ with tab5:
         """)
     
     st.markdown("---")
-
-    # Statistical leaders tables with improved design
-    st.markdown("""
-    <div style='margin: 2rem 0 1.5rem 0;'>
-        <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
-            🎯 Creative & Passing Leaders
-        </h2>
-        <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
-            Advanced passing metrics and creative playmaking analysis
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns(3)
+    # Create sub-tabs for League Leaders
+    sub_tab1, sub_tab2, sub_tab3 = st.tabs([
+        " Creative & Passing Leaders",
+        " Defensive Leaders", 
+        " Attacking Leaders"
+    ])
     
-    with col1:
+    with sub_tab1:
+        # Creative & Passing Leaders content
         st.markdown("""
+        <div style='margin: 2rem 0 1.5rem 0;'>
+            <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
+                 Creative & Passing Leaders
+            </h2>
+            <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
+                Advanced passing metrics and creative playmaking analysis
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #2563eb;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #2563eb; font-size: 1rem;'>Key Pass Efficiency</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Per 90 minutes</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'pass_KP' in df.columns and 'std_Min' in df.columns:
+                df['key_pass_efficiency'] = (df['pass_KP'] / (df['std_Min'] / 90)).fillna(0)
+                creative_leaders = df.nlargest(5, 'key_pass_efficiency')[['Player', 'Squad', 'key_pass_efficiency']].copy()
+                creative_leaders.columns = ['Player', 'Team', 'Key Passes per 90']
+                creative_leaders['Key Passes per 90'] = creative_leaders['Key Passes per 90'].round(2)
+                st.dataframe(creative_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Key passes or minutes data not found")
         
-        if 'pass_KP' in df.columns and 'std_Min' in df.columns:
-            df['key_pass_efficiency'] = (df['pass_KP'] / (df['std_Min'] / 90)).fillna(0)
-            creative_leaders = df.nlargest(5, 'key_pass_efficiency')[['Player', 'Squad', 'key_pass_efficiency']].copy()
-            creative_leaders.columns = ['Player', 'Team', 'Key Passes per 90']
-            creative_leaders['Key Passes per 90'] = creative_leaders['Key Passes per 90'].round(2)
-            st.dataframe(creative_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Key passes or minutes data not found")
-    
-    with col2:
-        st.markdown("""
+        with col2:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #28a745; font-size: 1rem;'>Key Pass Efficiency</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Progressive to key pass conversion</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'pass_KP' in df.columns and 'pass_PrgP' in df.columns:
-            # Calculate key pass efficiency: KP / PrgP * 100
-            df['key_pass_efficiency'] = (df['pass_KP'] / df['pass_PrgP'] * 100).fillna(0)
-            # Filter out players with very low progressive passes to avoid misleading ratios
-            qualified_players = df[df['pass_PrgP'] >= 10]  # Minimum 10 progressive passes
-            if not qualified_players.empty:
-                efficiency_leaders = qualified_players.nlargest(5, 'key_pass_efficiency')[['Player', 'Squad', 'key_pass_efficiency', 'pass_KP', 'pass_PrgP']].copy()
-                efficiency_leaders.columns = ['Player', 'Team', 'Efficiency %', 'Key Passes', 'Progressive Passes']
-                efficiency_leaders['Efficiency %'] = efficiency_leaders['Efficiency %'].round(1)
-                efficiency_leaders['Key Passes'] = efficiency_leaders['Key Passes'].round(1)
-                efficiency_leaders['Progressive Passes'] = efficiency_leaders['Progressive Passes'].round(1)
-                st.dataframe(efficiency_leaders, use_container_width=True, hide_index=True)
+            
+            if 'pass_KP' in df.columns and 'pass_PrgP' in df.columns:
+                # Calculate key pass efficiency: KP / PrgP * 100
+                df['key_pass_efficiency'] = (df['pass_KP'] / df['pass_PrgP'] * 100).fillna(0)
+                # Filter out players with very low progressive passes to avoid misleading ratios
+                qualified_players = df[df['pass_PrgP'] >= 10]  # Minimum 10 progressive passes
+                if not qualified_players.empty:
+                    efficiency_leaders = qualified_players.nlargest(5, 'key_pass_efficiency')[['Player', 'Squad', 'key_pass_efficiency', 'pass_KP', 'pass_PrgP']].copy()
+                    efficiency_leaders.columns = ['Player', 'Team', 'Efficiency %', 'Key Passes', 'Progressive Passes']
+                    efficiency_leaders['Efficiency %'] = efficiency_leaders['Efficiency %'].round(1)
+                    efficiency_leaders['Key Passes'] = efficiency_leaders['Key Passes'].round(1)
+                    efficiency_leaders['Progressive Passes'] = efficiency_leaders['Progressive Passes'].round(1)
+                    st.dataframe(efficiency_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No players with 10+ progressive passes found")
             else:
-                st.info("No players with 10+ progressive passes found")
-        else:
-            st.info("Key passes or progressive passes data not found")
-    
-    with col3:
-        st.markdown("""
+                st.info("Key passes or progressive passes data not found")
+        
+        with col3:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #ffc107; font-size: 1rem;'>Maestro</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Risk & creativity balance</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'pass_KP' in df.columns and 'pass_PPA' in df.columns and 'std_xAG' in df.columns and 'pass_Cmp%' in df.columns:
+                # Calculate maestro: (KP * 2) + PPA + (xAG * 3) - ((100 - Cmp%) / 10)
+                df['maestro_score'] = ((df['pass_KP'] * 2) + df['pass_PPA'] + (df['std_xAG'] * 3) - ((100 - df['pass_Cmp%']) / 10)).fillna(0)
+                maestro_leaders = df.nlargest(5, 'maestro_score')[['Player', 'Squad', 'maestro_score', 'pass_KP', 'pass_PPA', 'std_xAG', 'pass_Cmp%']].copy()
+                maestro_leaders.columns = ['Player', 'Team', 'Maestro Score', 'Key Passes', 'Penalty Passes', 'xAG', 'Pass %']
+                maestro_leaders['Maestro Score'] = maestro_leaders['Maestro Score'].round(1)
+                maestro_leaders['Key Passes'] = maestro_leaders['Key Passes'].round(1)
+                maestro_leaders['Penalty Passes'] = maestro_leaders['Penalty Passes'].round(1)
+                maestro_leaders['xAG'] = maestro_leaders['xAG'].round(1)
+                maestro_leaders['Pass %'] = (maestro_leaders['Pass %'] * 100).round(1)
+                st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Maestro calculation data not found")
         
-        if 'pass_KP' in df.columns and 'pass_PPA' in df.columns and 'std_xAG' in df.columns and 'pass_Cmp%' in df.columns:
-            # Calculate maestro: (KP * 2) + PPA + (xAG * 3) - ((100 - Cmp%) / 10)
-            df['maestro_score'] = ((df['pass_KP'] * 2) + df['pass_PPA'] + (df['std_xAG'] * 3) - ((100 - df['pass_Cmp%']) / 10)).fillna(0)
-            maestro_leaders = df.nlargest(5, 'maestro_score')[['Player', 'Squad', 'maestro_score', 'pass_KP', 'pass_PPA', 'std_xAG', 'pass_Cmp%']].copy()
-            maestro_leaders.columns = ['Player', 'Team', 'Maestro Score', 'Key Passes', 'Penalty Passes', 'xAG', 'Pass %']
-            maestro_leaders['Maestro Score'] = maestro_leaders['Maestro Score'].round(1)
-            maestro_leaders['Key Passes'] = maestro_leaders['Key Passes'].round(1)
-            maestro_leaders['Penalty Passes'] = maestro_leaders['Penalty Passes'].round(1)
-            maestro_leaders['xAG'] = maestro_leaders['xAG'].round(1)
-            maestro_leaders['Pass %'] = (maestro_leaders['Pass %'] * 100).round(1)
-            st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Maestro calculation data not found")
-    
-    # Second row of Creative & Passing Leaders
-    col4, col5, col6 = st.columns(3)
-    
-    with col4:
-        st.markdown("""
+        # Second row of Creative & Passing Leaders
+        col4, col5, col6 = st.columns(3)
+        
+        with col4:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #6f42c1;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #6f42c1; font-size: 1rem;'>Vertical Playmaker</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Progressive passing threat</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'pass_PrgP' in df.columns and 'pass_1/3' in df.columns and 'pass_PPA' in df.columns:
+                # Calculate vertical playmaker: PrgP + (1/3 * 2) + (PPA * 5)
+                df['vertical_playmaker'] = (df['pass_PrgP'] + (df['pass_1/3'] * 2) + (df['pass_PPA'] * 5)).fillna(0)
+                vertical_leaders = df.nlargest(5, 'vertical_playmaker')[['Player', 'Squad', 'vertical_playmaker', 'pass_PrgP', 'pass_1/3', 'pass_PPA']].copy()
+                vertical_leaders.columns = ['Player', 'Team', 'Vertical Score', 'Progressive Passes', 'Final Third', 'Penalty Passes']
+                vertical_leaders['Vertical Score'] = vertical_leaders['Vertical Score'].round(1)
+                vertical_leaders['Progressive Passes'] = vertical_leaders['Progressive Passes'].round(1)
+                vertical_leaders['Final Third'] = vertical_leaders['Final Third'].round(1)
+                vertical_leaders['Penalty Passes'] = vertical_leaders['Penalty Passes'].round(1)
+                st.dataframe(vertical_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Vertical playmaker data not found")
         
-        if 'pass_PrgP' in df.columns and 'pass_1/3' in df.columns and 'pass_PPA' in df.columns:
-            # Calculate vertical playmaker: PrgP + (1/3 * 2) + (PPA * 5)
-            df['vertical_playmaker'] = (df['pass_PrgP'] + (df['pass_1/3'] * 2) + (df['pass_PPA'] * 5)).fillna(0)
-            vertical_leaders = df.nlargest(5, 'vertical_playmaker')[['Player', 'Squad', 'vertical_playmaker', 'pass_PrgP', 'pass_1/3', 'pass_PPA']].copy()
-            vertical_leaders.columns = ['Player', 'Team', 'Vertical Score', 'Progressive Passes', 'Final Third', 'Penalty Passes']
-            vertical_leaders['Vertical Score'] = vertical_leaders['Vertical Score'].round(1)
-            vertical_leaders['Progressive Passes'] = vertical_leaders['Progressive Passes'].round(1)
-            vertical_leaders['Final Third'] = vertical_leaders['Final Third'].round(1)
-            vertical_leaders['Penalty Passes'] = vertical_leaders['Penalty Passes'].round(1)
-            st.dataframe(vertical_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Vertical playmaker data not found")
-    
-    with col5:
-        st.markdown("""
+        with col5:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #dc3545;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #dc3545; font-size: 1rem;'>Press-Resistant Passer</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Reliable under pressure</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'pass_Cmp%' in df.columns and 'poss_Dis' in df.columns:
-            # Calculate press-resistant passer: Cmp% / (Dis + 1)
-            df['press_resistant'] = (df['pass_Cmp%'] / (df['poss_Dis'] + 1)).fillna(0)
-            # Filter out players with very low dispossessions to avoid misleading ratios
-            qualified_passers = df[df['poss_Dis'] >= 5]
-            if not qualified_passers.empty:
-                press_leaders = qualified_passers.nlargest(5, 'press_resistant')[['Player', 'Squad', 'press_resistant', 'pass_Cmp%', 'poss_Dis']].copy()
-                press_leaders.columns = ['Player', 'Team', 'Reliability Ratio', 'Pass %', 'Dispossessions']
-                press_leaders['Reliability Ratio'] = press_leaders['Reliability Ratio'].round(2)
-                press_leaders['Pass %'] = (press_leaders['Pass %'] * 100).round(1)
-                press_leaders['Dispossessions'] = press_leaders['Dispossessions'].round(1)
-                st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+            
+            if 'pass_Cmp%' in df.columns and 'poss_Dis' in df.columns:
+                # Calculate press-resistant passer: Cmp% / (Dis + 1)
+                df['press_resistant'] = (df['pass_Cmp%'] / (df['poss_Dis'] + 1)).fillna(0)
+                # Filter out players with very low dispossessions to avoid misleading ratios
+                qualified_passers = df[df['poss_Dis'] >= 5]
+                if not qualified_passers.empty:
+                    press_leaders = qualified_passers.nlargest(5, 'press_resistant')[['Player', 'Squad', 'press_resistant', 'pass_Cmp%', 'poss_Dis']].copy()
+                    press_leaders.columns = ['Player', 'Team', 'Reliability Ratio', 'Pass %', 'Dispossessions']
+                    press_leaders['Reliability Ratio'] = press_leaders['Reliability Ratio'].round(2)
+                    press_leaders['Pass %'] = (press_leaders['Pass %'] * 100).round(1)
+                    press_leaders['Dispossessions'] = press_leaders['Dispossessions'].round(1)
+                    st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No qualified passers found")
             else:
-                st.info("No qualified passers found")
-        else:
-            st.info("Pass accuracy or dispossessions data not found")
-    
-    with col6:
-        st.markdown("""
+                st.info("Pass accuracy or dispossessions data not found")
+        
+        with col6:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #17a2b8;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #17a2b8; font-size: 1rem;'>Visionary</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Long-range passing vision</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'passt_Sw' in df.columns and 'passt_TB' in df.columns:
-            # Calculate visionary: Sw + (TB * 3)
-            df['visionary_score'] = (df['passt_Sw'] + (df['passt_TB'] * 3)).fillna(0)
-            visionary_leaders = df.nlargest(5, 'visionary_score')[['Player', 'Squad', 'visionary_score', 'passt_Sw', 'passt_TB']].copy()
-            visionary_leaders.columns = ['Player', 'Team', 'Vision Score', 'Switches', 'Through Balls']
-            visionary_leaders['Vision Score'] = visionary_leaders['Vision Score'].round(1)
-            visionary_leaders['Switches'] = visionary_leaders['Switches'].round(1)
-            visionary_leaders['Through Balls'] = visionary_leaders['Through Balls'].round(1)
-            st.dataframe(visionary_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Switch or through ball data not found")
+            
+            if 'passt_Sw' in df.columns and 'passt_TB' in df.columns:
+                # Calculate visionary: Sw + (TB * 3)
+                df['visionary_score'] = (df['passt_Sw'] + (df['passt_TB'] * 3)).fillna(0)
+                visionary_leaders = df.nlargest(5, 'visionary_score')[['Player', 'Squad', 'visionary_score', 'passt_Sw', 'passt_TB']].copy()
+                visionary_leaders.columns = ['Player', 'Team', 'Vision Score', 'Switches', 'Through Balls']
+                visionary_leaders['Vision Score'] = visionary_leaders['Vision Score'].round(1)
+                visionary_leaders['Switches'] = visionary_leaders['Switches'].round(1)
+                visionary_leaders['Through Balls'] = visionary_leaders['Through Balls'].round(1)
+                st.dataframe(visionary_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Switch or through ball data not found")
     
-    
-    st.markdown("""
-    <div style='margin: 2rem 0 1.5rem 0;'>
-        <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
-            🛡️ Defensive Leaders
-        </h2>
-        <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
-            Defensive efficiency, intelligence, and high-press specialists
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col_def1, col_def2 = st.columns(2)
-    
-    with col_def1:
+    with sub_tab2:
+        # Defensive Leaders content
         st.markdown("""
+        <div style='margin: 2rem 0 1.5rem 0;'>
+            <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
+                 Defensive Leaders
+            </h2>
+            <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
+                Defensive efficiency, intelligence, and high-press specialists
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_def1, col_def2 = st.columns(2)
+        
+        with col_def1:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #2563eb;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #2563eb; font-size: 1rem;'>Defensive Efficiency</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Per 90 minutes</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'def_Tkl' in df.columns and 'def_Int' in df.columns and 'std_Min' in df.columns:
+                df['defensive_efficiency'] = ((df['def_Tkl'] + df['def_Int']) / (df['std_Min'] / 90)).fillna(0)
+                defensive_leaders = df.nlargest(5, 'defensive_efficiency')[['Player', 'Squad', 'defensive_efficiency']].copy()
+                defensive_leaders.columns = ['Player', 'Team', 'Tackles+Int per 90']
+                defensive_leaders['Tackles+Int per 90'] = defensive_leaders['Tackles+Int per 90'].round(2)
+                st.dataframe(defensive_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Defensive or minutes data not found")
         
-        if 'def_Tkl' in df.columns and 'def_Int' in df.columns and 'std_Min' in df.columns:
-            df['defensive_efficiency'] = ((df['def_Tkl'] + df['def_Int']) / (df['std_Min'] / 90)).fillna(0)
-            defensive_leaders = df.nlargest(5, 'defensive_efficiency')[['Player', 'Squad', 'defensive_efficiency']].copy()
-            defensive_leaders.columns = ['Player', 'Team', 'Tackles+Int per 90']
-            defensive_leaders['Tackles+Int per 90'] = defensive_leaders['Tackles+Int per 90'].round(2)
-            st.dataframe(defensive_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Defensive or minutes data not found")
-    
-    with col_def2:
-        st.markdown("""
+        with col_def2:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #28a745; font-size: 1rem;'>Recovery Rate</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Per 90 minutes</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'misc_Recov' in df.columns and 'std_Min' in df.columns:
+                df['recovery_rate'] = (df['misc_Recov'] / (df['std_Min'] / 90)).fillna(0)
+                recovery_leaders = df.nlargest(5, 'recovery_rate')[['Player', 'Squad', 'recovery_rate']].copy()
+                recovery_leaders.columns = ['Player', 'Team', 'Recoveries per 90']
+                recovery_leaders['Recoveries per 90'] = recovery_leaders['Recoveries per 90'].round(2)
+                st.dataframe(recovery_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Recovery or minutes data not found")
         
-        if 'misc_Recov' in df.columns and 'std_Min' in df.columns:
-            df['recovery_rate'] = (df['misc_Recov'] / (df['std_Min'] / 90)).fillna(0)
-            recovery_leaders = df.nlargest(5, 'recovery_rate')[['Player', 'Squad', 'recovery_rate']].copy()
-            recovery_leaders.columns = ['Player', 'Team', 'Recoveries per 90']
-            recovery_leaders['Recoveries per 90'] = recovery_leaders['Recoveries per 90'].round(2)
-            st.dataframe(recovery_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Recovery or minutes data not found")
-    
-    # Second row of Defensive Leaders
-    col_def3, col_def4 = st.columns(2)
-    
-    with col_def3:
-        st.markdown("""
+        # Second row of Defensive Leaders
+        col_def3, col_def4 = st.columns(2)
+        
+        with col_def3:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #ffc107; font-size: 1rem;'>Defensive Intelligence</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Interceptions vs Tackles ratio</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'def_Int' in df.columns and 'def_Tkl' in df.columns:
-            # Calculate defensive intelligence: Int / Tkl
-            df['defensive_intelligence'] = (df['def_Int'] / df['def_Tkl']).fillna(0)
-            # Filter out players with very low defensive actions
-            qualified_defenders = df[(df['def_Tkl'] >= 5) & (df['def_Int'] >= 3)]
-            if not qualified_defenders.empty:
-                intelligence_leaders = qualified_defenders.nlargest(5, 'defensive_intelligence')[['Player', 'Squad', 'defensive_intelligence', 'def_Int', 'def_Tkl']].copy()
-                intelligence_leaders.columns = ['Player', 'Team', 'Intelligence Ratio', 'Interceptions', 'Tackles']
-                intelligence_leaders['Intelligence Ratio'] = intelligence_leaders['Intelligence Ratio'].round(2)
-                intelligence_leaders['Interceptions'] = intelligence_leaders['Interceptions'].round(1)
-                intelligence_leaders['Tackles'] = intelligence_leaders['Tackles'].round(1)
-                st.dataframe(intelligence_leaders, use_container_width=True, hide_index=True)
+            
+            if 'def_Int' in df.columns and 'def_Tkl' in df.columns:
+                # Calculate defensive intelligence: Int / Tkl
+                df['defensive_intelligence'] = (df['def_Int'] / df['def_Tkl']).fillna(0)
+                # Filter out players with very low defensive actions
+                qualified_defenders = df[(df['def_Tkl'] >= 5) & (df['def_Int'] >= 3)]
+                if not qualified_defenders.empty:
+                    intelligence_leaders = qualified_defenders.nlargest(5, 'defensive_intelligence')[['Player', 'Squad', 'defensive_intelligence', 'def_Int', 'def_Tkl']].copy()
+                    intelligence_leaders.columns = ['Player', 'Team', 'Intelligence Ratio', 'Interceptions', 'Tackles']
+                    intelligence_leaders['Intelligence Ratio'] = intelligence_leaders['Intelligence Ratio'].round(2)
+                    intelligence_leaders['Interceptions'] = intelligence_leaders['Interceptions'].round(1)
+                    intelligence_leaders['Tackles'] = intelligence_leaders['Tackles'].round(1)
+                    st.dataframe(intelligence_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No qualified defenders found")
             else:
-                st.info("No qualified defenders found")
-        else:
-            st.info("Interceptions or tackles data not found")
-    
-    with col_def4:
-        st.markdown("""
+                st.info("Interceptions or tackles data not found")
+        
+        with col_def4:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #6f42c1;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #6f42c1; font-size: 1rem;'>High Press Percentage</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Defensive actions in attacking third</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'def_Att 3rd' in df.columns and 'def_Def 3rd' in df.columns and 'def_Mid 3rd' in df.columns:
-            # Calculate high press percentage
-            df['total_def_actions'] = df['def_Def 3rd'] + df['def_Mid 3rd'] + df['def_Att 3rd']
-            df['high_press_pct'] = (df['def_Att 3rd'] / df['total_def_actions'] * 100).fillna(0)
-            # Filter out players with very low defensive actions
-            qualified_pressers = df[df['total_def_actions'] >= 10]
-            if not qualified_pressers.empty:
-                press_leaders = qualified_pressers.nlargest(5, 'high_press_pct')[['Player', 'Squad', 'high_press_pct', 'def_Att 3rd', 'total_def_actions']].copy()
-                press_leaders.columns = ['Player', 'Team', 'High Press %', 'Attacking Third', 'Total Actions']
-                press_leaders['High Press %'] = press_leaders['High Press %'].round(1)
-                press_leaders['Attacking Third'] = press_leaders['Attacking Third'].round(1)
-                press_leaders['Total Actions'] = press_leaders['Total Actions'].round(1)
-                st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+            
+            if 'def_Att 3rd' in df.columns and 'def_Def 3rd' in df.columns and 'def_Mid 3rd' in df.columns:
+                # Calculate high press percentage
+                df['total_def_actions'] = df['def_Def 3rd'] + df['def_Mid 3rd'] + df['def_Att 3rd']
+                df['high_press_pct'] = (df['def_Att 3rd'] / df['total_def_actions'] * 100).fillna(0)
+                # Filter out players with very low defensive actions
+                qualified_pressers = df[df['total_def_actions'] >= 10]
+                if not qualified_pressers.empty:
+                    press_leaders = qualified_pressers.nlargest(5, 'high_press_pct')[['Player', 'Squad', 'high_press_pct', 'def_Att 3rd', 'total_def_actions']].copy()
+                    press_leaders.columns = ['Player', 'Team', 'High Press %', 'Attacking Third', 'Total Actions']
+                    press_leaders['High Press %'] = press_leaders['High Press %'].round(1)
+                    press_leaders['Attacking Third'] = press_leaders['Attacking Third'].round(1)
+                    press_leaders['Total Actions'] = press_leaders['Total Actions'].round(1)
+                    st.dataframe(press_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No qualified pressers found")
             else:
-                st.info("No qualified pressers found")
-        else:
-            st.info("Defensive third data not found")
+                st.info("Defensive third data not found")
     
-    
-    st.markdown("""
-    <div style='margin: 2rem 0 1.5rem 0;'>
-        <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
-            ⚡ Attacking & Ball Carrying Leaders
-        </h2>
-        <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
-            Clinical finishing, penalty area threat, and set piece specialists
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col5, col6, col7 = st.columns(3)
-    
-    with col5:
+    with sub_tab3:
+        # Attacking Leaders content
         st.markdown("""
-        <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #2563eb;'>
-            <h4 style='margin: 0 0 0.5rem 0; color: #2563eb; font-size: 1rem;'>Most Clinical Finishers</h4>
-            <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Goals vs xG efficiency</p>
-            <p style='margin: 0.3rem 0 0 0; color: #dc3545; font-size: 0.75rem; font-weight: 500;'>*Minimum 5 goals required*</p>
+        <div style='margin: 2rem 0 1.5rem 0;'>
+            <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
+                 Attacking Leaders
+            </h2>
+            <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
+                Clinical finishing, penalty area threat, and set piece specialists
+            </p>
         </div>
         """, unsafe_allow_html=True)
         
-        if 'std_Gls' in df.columns and 'std_xG' in df.columns and 'Gls' in df.columns:
-            # Filter players with at least 5 goals
-            qualified_finishers = df[df['Gls'] >= 5]
-            if not qualified_finishers.empty:
-                # Calculate goals vs xG ratio (clinical finishing)
-                qualified_finishers = qualified_finishers.copy()
-                qualified_finishers['clinical_ratio'] = qualified_finishers['std_Gls'] / qualified_finishers['std_xG'].replace(0, 0.1)  # Avoid division by zero
-                clinical_leaders = qualified_finishers.nlargest(5, 'clinical_ratio')[['Player', 'Squad', 'std_Gls', 'std_xG', 'clinical_ratio']].copy()
-                clinical_leaders.columns = ['Player', 'Team', 'Goals', 'xG', 'Goals/xG Ratio']
-                clinical_leaders['Goals/xG Ratio'] = clinical_leaders['Goals/xG Ratio'].round(2)
-                clinical_leaders['Goals'] = clinical_leaders['Goals'].round(1)
-                clinical_leaders['xG'] = clinical_leaders['xG'].round(1)
-                st.dataframe(clinical_leaders, use_container_width=True, hide_index=True)
+        col5, col6, col7 = st.columns(3)
+        
+        with col5:
+            st.markdown("""
+        <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #2563eb;'>
+            <h4 style='margin: 0 0 0.5rem 0; color: #2563eb; font-size: 1rem;'>Most Clinical Finishers</h4>
+            <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Goals vs xG efficiency <span style='color: #dc3545; font-size: 0.75rem; font-weight: 500;'>*Minimum 5 goals required*</span></p>
+        </div>
+        """, unsafe_allow_html=True)
+            
+            if 'std_Gls' in df.columns and 'std_xG' in df.columns and 'Gls' in df.columns:
+                # Filter players with at least 5 goals
+                qualified_finishers = df[df['Gls'] >= 5]
+                if not qualified_finishers.empty:
+                    # Calculate goals vs xG ratio (clinical finishing)
+                    qualified_finishers = qualified_finishers.copy()
+                    qualified_finishers['clinical_ratio'] = qualified_finishers['std_Gls'] / qualified_finishers['std_xG'].replace(0, 0.1)  # Avoid division by zero
+                    clinical_leaders = qualified_finishers.nlargest(5, 'clinical_ratio')[['Player', 'Squad', 'std_Gls', 'std_xG', 'clinical_ratio']].copy()
+                    clinical_leaders.columns = ['Player', 'Team', 'Goals', 'xG', 'Goals/xG Ratio']
+                    clinical_leaders['Goals/xG Ratio'] = clinical_leaders['Goals/xG Ratio'].round(2)
+                    clinical_leaders['Goals'] = clinical_leaders['Goals'].round(1)
+                    clinical_leaders['xG'] = clinical_leaders['xG'].round(1)
+                    st.dataframe(clinical_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No players with 5+ goals found")
             else:
-                st.info("No players with 5+ goals found")
-        else:
-            st.info("Goals or xG data not found")
-    
-    with col6:
-        st.markdown("""
+                st.info("Goals or xG data not found")
+        
+        with col6:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #28a745; font-size: 1rem;'>Penalty Area Threat</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Danger in and around penalty area</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'pass_PPA' in df.columns and 'poss_CPA' in df.columns and 'std_PrgR' in df.columns:
+                # Calculate penalty area threat: PPA + CPA + PrgR
+                df['penalty_area_threat'] = (df['pass_PPA'] + df['poss_CPA'] + df['std_PrgR']).fillna(0)
+                threat_leaders = df.nlargest(5, 'penalty_area_threat')[['Player', 'Squad', 'penalty_area_threat', 'pass_PPA', 'poss_CPA', 'std_PrgR']].copy()
+                threat_leaders.columns = ['Player', 'Team', 'Threat Score', 'Penalty Passes', 'Penalty Carries', 'Penalty Receives']
+                threat_leaders['Threat Score'] = threat_leaders['Threat Score'].round(1)
+                threat_leaders['Penalty Passes'] = threat_leaders['Penalty Passes'].round(1)
+                threat_leaders['Penalty Carries'] = threat_leaders['Penalty Carries'].round(1)
+                threat_leaders['Penalty Receives'] = threat_leaders['Penalty Receives'].round(1)
+                st.dataframe(threat_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Penalty area data not found")
         
-        if 'pass_PPA' in df.columns and 'poss_CPA' in df.columns and 'std_PrgR' in df.columns:
-            # Calculate penalty area threat: PPA + CPA + PrgR
-            df['penalty_area_threat'] = (df['pass_PPA'] + df['poss_CPA'] + df['std_PrgR']).fillna(0)
-            threat_leaders = df.nlargest(5, 'penalty_area_threat')[['Player', 'Squad', 'penalty_area_threat', 'pass_PPA', 'poss_CPA', 'std_PrgR']].copy()
-            threat_leaders.columns = ['Player', 'Team', 'Threat Score', 'Penalty Passes', 'Penalty Carries', 'Penalty Receives']
-            threat_leaders['Threat Score'] = threat_leaders['Threat Score'].round(1)
-            threat_leaders['Penalty Passes'] = threat_leaders['Penalty Passes'].round(1)
-            threat_leaders['Penalty Carries'] = threat_leaders['Penalty Carries'].round(1)
-            threat_leaders['Penalty Receives'] = threat_leaders['Penalty Receives'].round(1)
-            st.dataframe(threat_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Penalty area data not found")
-    
-    with col7:
-        st.markdown("""
+        with col7:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #ffc107; font-size: 1rem;'>One-Man Army</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Individual skill creating positions</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'gca_TO' in df.columns and 'gca_Fld' in df.columns and 'poss_CPA' in df.columns:
+                # Calculate one-man army: (TO * 10) + (Fld * 5) + CPA
+                df['one_man_army'] = ((df['gca_TO'] * 10) + (df['gca_Fld'] * 5) + df['poss_CPA']).fillna(0)
+                army_leaders = df.nlargest(5, 'one_man_army')[['Player', 'Squad', 'one_man_army', 'gca_TO', 'gca_Fld', 'poss_CPA']].copy()
+                army_leaders.columns = ['Player', 'Team', 'Army Score', 'Take-Ons', 'Fouls Won', 'Penalty Carries']
+                army_leaders['Army Score'] = army_leaders['Army Score'].round(1)
+                army_leaders['Take-Ons'] = army_leaders['Take-Ons'].round(1)
+                army_leaders['Fouls Won'] = army_leaders['Fouls Won'].round(1)
+                army_leaders['Penalty Carries'] = army_leaders['Penalty Carries'].round(1)
+                st.dataframe(army_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Individual skill data not found")
         
-        if 'gca_TO' in df.columns and 'gca_Fld' in df.columns and 'poss_CPA' in df.columns:
-            # Calculate one-man army: (TO * 10) + (Fld * 5) + CPA
-            df['one_man_army'] = ((df['gca_TO'] * 10) + (df['gca_Fld'] * 5) + df['poss_CPA']).fillna(0)
-            army_leaders = df.nlargest(5, 'one_man_army')[['Player', 'Squad', 'one_man_army', 'gca_TO', 'gca_Fld', 'poss_CPA']].copy()
-            army_leaders.columns = ['Player', 'Team', 'Army Score', 'Take-Ons', 'Fouls Won', 'Penalty Carries']
-            army_leaders['Army Score'] = army_leaders['Army Score'].round(1)
-            army_leaders['Take-Ons'] = army_leaders['Take-Ons'].round(1)
-            army_leaders['Fouls Won'] = army_leaders['Fouls Won'].round(1)
-            army_leaders['Penalty Carries'] = army_leaders['Penalty Carries'].round(1)
-            st.dataframe(army_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Individual skill data not found")
-    
-    # Second row of Attacking & Ball Carrying Leaders
-    col8, col9 = st.columns(2)
-    
-    with col8:
-        st.markdown("""
+        # Second row of Attacking & Ball Carrying Leaders
+        col8, col9 = st.columns(2)
+        
+        with col8:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #6f42c1;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #6f42c1; font-size: 1rem;'>Set Piece Maestro</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Dead ball specialist</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'gca_PassDead' in df.columns and 'passt_Crs' in df.columns:
+                # Calculate set piece maestro: (PassDead * 10) + Crs
+                df['set_piece_maestro'] = ((df['gca_PassDead'] * 10) + df['passt_Crs']).fillna(0)
+                maestro_leaders = df.nlargest(5, 'set_piece_maestro')[['Player', 'Squad', 'set_piece_maestro', 'gca_PassDead', 'passt_Crs']].copy()
+                maestro_leaders.columns = ['Player', 'Team', 'Maestro Score', 'Dead Ball Assists', 'Crosses']
+                maestro_leaders['Maestro Score'] = maestro_leaders['Maestro Score'].round(1)
+                maestro_leaders['Dead Ball Assists'] = maestro_leaders['Dead Ball Assists'].round(1)
+                maestro_leaders['Crosses'] = maestro_leaders['Crosses'].round(1)
+                st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Set piece data not found")
         
-        if 'gca_PassDead' in df.columns and 'passt_Crs' in df.columns:
-            # Calculate set piece maestro: (PassDead * 10) + Crs
-            df['set_piece_maestro'] = ((df['gca_PassDead'] * 10) + df['passt_Crs']).fillna(0)
-            maestro_leaders = df.nlargest(5, 'set_piece_maestro')[['Player', 'Squad', 'set_piece_maestro', 'gca_PassDead', 'passt_Crs']].copy()
-            maestro_leaders.columns = ['Player', 'Team', 'Maestro Score', 'Dead Ball Assists', 'Crosses']
-            maestro_leaders['Maestro Score'] = maestro_leaders['Maestro Score'].round(1)
-            maestro_leaders['Dead Ball Assists'] = maestro_leaders['Dead Ball Assists'].round(1)
-            maestro_leaders['Crosses'] = maestro_leaders['Crosses'].round(1)
-            st.dataframe(maestro_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Set piece data not found")
-    
-    with col9:
-        st.markdown("""
+        with col9:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #dc3545;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #dc3545; font-size: 1rem;'>Most Clinical Playmakers</h4>
-            <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Assists vs xAG efficiency</p>
-            <p style='margin: 0.3rem 0 0 0; color: #dc3545; font-size: 0.75rem; font-weight: 500;'>*Minimum 5 assists required*</p>
+            <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Assists vs xAG efficiency <span style='color: #dc3545; font-size: 0.75rem; font-weight: 500;'>*Minimum 5 assists required*</span></p>
+        </div>
+        """, unsafe_allow_html=True)
+            
+            if 'std_Ast' in df.columns and 'std_xAG' in df.columns and 'Ast' in df.columns:
+                # Filter players with at least 5 assists
+                qualified_playmakers = df[df['Ast'] >= 5]
+                if not qualified_playmakers.empty:
+                    # Calculate assists vs xAG ratio (clinical playmaking)
+                    qualified_playmakers = qualified_playmakers.copy()
+                    qualified_playmakers['playmaking_ratio'] = qualified_playmakers['std_Ast'] / qualified_playmakers['std_xAG'].replace(0, 0.1)  # Avoid division by zero
+                    playmaking_leaders = qualified_playmakers.nlargest(5, 'playmaking_ratio')[['Player', 'Squad', 'std_Ast', 'std_xAG', 'playmaking_ratio']].copy()
+                    playmaking_leaders.columns = ['Player', 'Team', 'Assists', 'xAG', 'Assists/xAG Ratio']
+                    playmaking_leaders['Assists/xAG Ratio'] = playmaking_leaders['Assists/xAG Ratio'].round(2)
+                    playmaking_leaders['Assists'] = playmaking_leaders['Assists'].round(1)
+                    playmaking_leaders['xAG'] = playmaking_leaders['xAG'].round(1)
+                    st.dataframe(playmaking_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No players with 5+ assists found")
+            else:
+                st.info("Assists or xAG data not found")
+        
+        # Dribble & Ball Carrying Specialists section
+        st.markdown("""
+        <div style='margin: 2rem 0 1.5rem 0;'>
+            <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
+                 Dribble & Ball Carrying Specialists
+            </h2>
+            <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
+                Progressive ball carrying, press resistance, and end-product dribbling
+            </p>
         </div>
         """, unsafe_allow_html=True)
         
-        if 'std_Ast' in df.columns and 'std_xAG' in df.columns and 'Ast' in df.columns:
-            # Filter players with at least 5 assists
-            qualified_playmakers = df[df['Ast'] >= 5]
-            if not qualified_playmakers.empty:
-                # Calculate assists vs xAG ratio (clinical playmaking)
-                qualified_playmakers = qualified_playmakers.copy()
-                qualified_playmakers['playmaking_ratio'] = qualified_playmakers['std_Ast'] / qualified_playmakers['std_xAG'].replace(0, 0.1)  # Avoid division by zero
-                playmaking_leaders = qualified_playmakers.nlargest(5, 'playmaking_ratio')[['Player', 'Squad', 'std_Ast', 'std_xAG', 'playmaking_ratio']].copy()
-                playmaking_leaders.columns = ['Player', 'Team', 'Assists', 'xAG', 'Assists/xAG Ratio']
-                playmaking_leaders['Assists/xAG Ratio'] = playmaking_leaders['Assists/xAG Ratio'].round(2)
-                playmaking_leaders['Assists'] = playmaking_leaders['Assists'].round(1)
-                playmaking_leaders['xAG'] = playmaking_leaders['xAG'].round(1)
-                st.dataframe(playmaking_leaders, use_container_width=True, hide_index=True)
-            else:
-                st.info("No players with 5+ assists found")
-        else:
-            st.info("Assists or xAG data not found")
-    
-    
-    st.markdown("""
-    <div style='margin: 2rem 0 1.5rem 0;'>
-        <h2 style='font-size: 1.5rem; font-weight: 600; text-align: center; color: #2563eb;'>
-            🏃 Dribble & Ball Carrying Specialists
-        </h2>
-        <p style='text-align: center; color: #6c757d; font-size: 0.9rem; margin-top: 0.5rem;'>
-            Progressive ball carrying, press resistance, and end-product dribbling
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col_drib1, col_drib2 = st.columns(2)
-    
-    with col_drib1:
-        st.markdown("""
+        col_drib1, col_drib2 = st.columns(2)
+        
+        with col_drib1:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #2563eb;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #2563eb; font-size: 1rem;'>Progressive Ball Carrier</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Vertical ball carrying threat</p>
         </div>
         """, unsafe_allow_html=True)
+            
+            if 'poss_PrgC' in df.columns and 'poss_1/3' in df.columns and 'poss_CPA' in df.columns:
+                # Calculate progressive ball carrier: PrgC + (1/3 * 2) + (CPA * 5)
+                df['progressive_carrier'] = (df['poss_PrgC'] + (df['poss_1/3'] * 2) + (df['poss_CPA'] * 5)).fillna(0)
+                carrier_leaders = df.nlargest(5, 'progressive_carrier')[['Player', 'Squad', 'progressive_carrier', 'poss_PrgC', 'poss_1/3', 'poss_CPA']].copy()
+                carrier_leaders.columns = ['Player', 'Team', 'Carrier Score', 'Progressive Carries', 'Final Third', 'Penalty Area']
+                carrier_leaders['Carrier Score'] = carrier_leaders['Carrier Score'].round(1)
+                carrier_leaders['Progressive Carries'] = carrier_leaders['Progressive Carries'].round(1)
+                carrier_leaders['Final Third'] = carrier_leaders['Final Third'].round(1)
+                carrier_leaders['Penalty Area'] = carrier_leaders['Penalty Area'].round(1)
+                st.dataframe(carrier_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Ball carrying data not found")
         
-        if 'poss_PrgC' in df.columns and 'poss_1/3' in df.columns and 'poss_CPA' in df.columns:
-            # Calculate progressive ball carrier: PrgC + (1/3 * 2) + (CPA * 5)
-            df['progressive_carrier'] = (df['poss_PrgC'] + (df['poss_1/3'] * 2) + (df['poss_CPA'] * 5)).fillna(0)
-            carrier_leaders = df.nlargest(5, 'progressive_carrier')[['Player', 'Squad', 'progressive_carrier', 'poss_PrgC', 'poss_1/3', 'poss_CPA']].copy()
-            carrier_leaders.columns = ['Player', 'Team', 'Carrier Score', 'Progressive Carries', 'Final Third', 'Penalty Area']
-            carrier_leaders['Carrier Score'] = carrier_leaders['Carrier Score'].round(1)
-            carrier_leaders['Progressive Carries'] = carrier_leaders['Progressive Carries'].round(1)
-            carrier_leaders['Final Third'] = carrier_leaders['Final Third'].round(1)
-            carrier_leaders['Penalty Area'] = carrier_leaders['Penalty Area'].round(1)
-            st.dataframe(carrier_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Ball carrying data not found")
-    
-    with col_drib2:
-        st.markdown("""
+        with col_drib2:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #28a745;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #28a745; font-size: 1rem;'>Press Breaker</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Reliable under pressure</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'poss_Carries' in df.columns and 'poss_Dis' in df.columns:
-            # Calculate press breaker: Carries / (Dis + 1)
-            df['press_breaker'] = (df['poss_Carries'] / (df['poss_Dis'] + 1)).fillna(0)
-            # Filter out players with very low carries to avoid misleading ratios
-            qualified_carriers = df[df['poss_Carries'] >= 20]
-            if not qualified_carriers.empty:
-                breaker_leaders = qualified_carriers.nlargest(5, 'press_breaker')[['Player', 'Squad', 'press_breaker', 'poss_Carries', 'poss_Dis']].copy()
-                breaker_leaders.columns = ['Player', 'Team', 'Reliability Ratio', 'Total Carries', 'Dispossessions']
-                breaker_leaders['Reliability Ratio'] = breaker_leaders['Reliability Ratio'].round(2)
-                breaker_leaders['Total Carries'] = breaker_leaders['Total Carries'].round(1)
-                breaker_leaders['Dispossessions'] = breaker_leaders['Dispossessions'].round(1)
-                st.dataframe(breaker_leaders, use_container_width=True, hide_index=True)
+            
+            if 'poss_Carries' in df.columns and 'poss_Dis' in df.columns:
+                # Calculate press breaker: Carries / (Dis + 1)
+                df['press_breaker'] = (df['poss_Carries'] / (df['poss_Dis'] + 1)).fillna(0)
+                # Filter out players with very low carries to avoid misleading ratios
+                qualified_carriers = df[df['poss_Carries'] >= 20]
+                if not qualified_carriers.empty:
+                    breaker_leaders = qualified_carriers.nlargest(5, 'press_breaker')[['Player', 'Squad', 'press_breaker', 'poss_Carries', 'poss_Dis']].copy()
+                    breaker_leaders.columns = ['Player', 'Team', 'Reliability Ratio', 'Total Carries', 'Dispossessions']
+                    breaker_leaders['Reliability Ratio'] = breaker_leaders['Reliability Ratio'].round(2)
+                    breaker_leaders['Total Carries'] = breaker_leaders['Total Carries'].round(1)
+                    breaker_leaders['Dispossessions'] = breaker_leaders['Dispossessions'].round(1)
+                    st.dataframe(breaker_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No players with 20+ carries found")
             else:
-                st.info("No players with 20+ carries found")
-        else:
-            st.info("Carries or dispossessions data not found")
-    
-    # Second row of Dribble & Ball Carrying Specialists
-    col_drib3, col_drib4 = st.columns(2)
-    
-    with col_drib3:
-        st.markdown("""
+                st.info("Carries or dispossessions data not found")
+        
+        # Second row of Dribble & Ball Carrying Specialists
+        col_drib3, col_drib4 = st.columns(2)
+        
+        with col_drib3:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #ffc107; font-size: 1rem;'>End-Product Dribbler</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Dribbling with goal threat</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'gca_TO' in df.columns and 'poss_Carries' in df.columns:
-            # Calculate end-product dribbler: (TO * 100) / Carries
-            df['end_product_dribbler'] = ((df['gca_TO'] * 100) / df['poss_Carries']).fillna(0)
-            # Filter out players with very low carries to avoid misleading ratios
-            qualified_dribblers = df[df['poss_Carries'] >= 20]
-            if not qualified_dribblers.empty:
-                dribbler_leaders = qualified_dribblers.nlargest(5, 'end_product_dribbler')[['Player', 'Squad', 'end_product_dribbler', 'gca_TO', 'poss_Carries']].copy()
-                dribbler_leaders.columns = ['Player', 'Team', 'End-Product %', 'Take-Ons', 'Total Carries']
-                dribbler_leaders['End-Product %'] = dribbler_leaders['End-Product %'].round(1)
-                dribbler_leaders['Take-Ons'] = dribbler_leaders['Take-Ons'].round(1)
-                dribbler_leaders['Total Carries'] = dribbler_leaders['Total Carries'].round(1)
-                st.dataframe(dribbler_leaders, use_container_width=True, hide_index=True)
+            
+            if 'gca_TO' in df.columns and 'poss_Carries' in df.columns:
+                # Calculate end-product dribbler: (TO * 100) / Carries
+                df['end_product_dribbler'] = ((df['gca_TO'] * 100) / df['poss_Carries']).fillna(0)
+                # Filter out players with very low carries to avoid misleading ratios
+                qualified_dribblers = df[df['poss_Carries'] >= 20]
+                if not qualified_dribblers.empty:
+                    dribbler_leaders = qualified_dribblers.nlargest(5, 'end_product_dribbler')[['Player', 'Squad', 'end_product_dribbler', 'gca_TO', 'poss_Carries']].copy()
+                    dribbler_leaders.columns = ['Player', 'Team', 'End-Product %', 'Take-Ons', 'Total Carries']
+                    dribbler_leaders['End-Product %'] = dribbler_leaders['End-Product %'].round(1)
+                    dribbler_leaders['Take-Ons'] = dribbler_leaders['Take-Ons'].round(1)
+                    dribbler_leaders['Total Carries'] = dribbler_leaders['Total Carries'].round(1)
+                    st.dataframe(dribbler_leaders, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No players with 20+ carries found")
             else:
-                st.info("No players with 20+ carries found")
-        else:
-            st.info("Take-ons or carries data not found")
-    
-    with col_drib4:
-        st.markdown("""
+                st.info("Take-ons or carries data not found")
+        
+        with col_drib4:
+            st.markdown("""
         <div style='background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #6f42c1;'>
             <h4 style='margin: 0 0 0.5rem 0; color: #6f42c1; font-size: 1rem;'>Dribble Impact Score</h4>
             <p style='margin: 0; color: #6c757d; font-size: 0.8rem;'>Progressive carries + defensive disruption</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        if 'poss_PrgC' in df.columns and 'gca_TO' in df.columns:
-            # Calculate dribble impact: PrgC + (gca_TO * 10)
-            df['dribble_impact'] = (df['poss_PrgC'] + (df['gca_TO'] * 10)).fillna(0)
-            dribble_leaders = df.nlargest(5, 'dribble_impact')[['Player', 'Squad', 'dribble_impact', 'poss_PrgC', 'gca_TO']].copy()
-            dribble_leaders.columns = ['Player', 'Team', 'Impact Score', 'Progressive Carries', 'Take-Ons']
-            dribble_leaders['Impact Score'] = dribble_leaders['Impact Score'].round(1)
-            dribble_leaders['Progressive Carries'] = dribble_leaders['Progressive Carries'].round(1)
-            dribble_leaders['Take-Ons'] = dribble_leaders['Take-Ons'].round(1)
-            st.dataframe(dribble_leaders, use_container_width=True, hide_index=True)
-        else:
-            st.info("Progressive carries or take-ons data not found")
+            
+            if 'poss_PrgC' in df.columns and 'gca_TO' in df.columns:
+                # Calculate dribble impact: PrgC + (gca_TO * 10)
+                df['dribble_impact'] = (df['poss_PrgC'] + (df['gca_TO'] * 10)).fillna(0)
+                dribble_leaders = df.nlargest(5, 'dribble_impact')[['Player', 'Squad', 'dribble_impact', 'poss_PrgC', 'gca_TO']].copy()
+                dribble_leaders.columns = ['Player', 'Team', 'Impact Score', 'Progressive Carries', 'Take-Ons']
+                dribble_leaders['Impact Score'] = dribble_leaders['Impact Score'].round(1)
+                dribble_leaders['Progressive Carries'] = dribble_leaders['Progressive Carries'].round(1)
+                dribble_leaders['Take-Ons'] = dribble_leaders['Take-Ons'].round(1)
+                st.dataframe(dribble_leaders, use_container_width=True, hide_index=True)
+            else:
+                st.info("Progressive carries or take-ons data not found")
 
 
 
